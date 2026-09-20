@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hin &amp; Her — German / English drill</title>
+<meta name="theme-color" content="#EDF0EA">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hin & Her">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EDF0EA; --panel:#FFFFFF; --ink:#1B1F24; --muted:#6C7480; --line:#D3D9CE;
+    --der:#2F62C8; --die:#C43F7C; --das:#2E8A5B;
+    --ok:#2F7A4D; --okbg:#E1F1E6;
+    --minor:#9A5B00; --minorbg:#FBEFD6;
+    --bad:#B3261E; --badbg:#F9E3E1;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  body{min-height:100dvh;display:flex;justify-content:center}
+  main{width:100%;max-width:480px;padding:16px 18px 96px;display:flex;flex-direction:column;gap:18px}
+
+  .strip{display:flex;align-items:baseline;gap:14px;font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
+  .strip b{color:var(--ink);font-weight:800}
+  .strip button{background:none;border:0;padding:0;font:inherit;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .strip button[aria-expanded="true"]{color:var(--ink)}
+  .strip .help-btn{margin-left:auto;flex:none;width:24px;height:24px;border:1.5px solid var(--muted);border-radius:50%;text-decoration:none;font-weight:800;line-height:1;display:inline-flex;align-items:center;justify-content:center;align-self:center}
+  .strip #keyBtn[hidden]{display:none}
+
+  /* Help */
+  .help{position:fixed;inset:0;z-index:20;background:rgba(27,31,36,.45);display:flex;align-items:flex-end;justify-content:center}
+  .help[hidden]{display:none}
+  .help-box{width:100%;max-width:480px;height:min(82dvh,640px);background:var(--bg);border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden}
+  @media (min-width:520px){.help{align-items:center}.help-box{border-radius:18px}}
+  .help-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;font-weight:800;font-size:16px;border-bottom:1px solid var(--line)}
+  .help-head button{background:none;border:0;font:inherit;font-size:26px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px}
+  .help-body{display:flex;flex:1;min-height:0}
+  .help-nav{flex:0 0 100px;border-right:1px solid var(--line);overflow-y:auto;padding:6px 0}
+  .help-nav button{display:block;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;padding:9px 8px 9px 11px;font:inherit;font-size:12.5px;font-weight:700;line-height:1.25;color:var(--muted);cursor:pointer}
+  .help-nav button[aria-current="true"]{color:var(--ink);border-left-color:var(--ink);background:var(--panel)}
+  .help-pane{flex:1;min-width:0;display:flex;flex-direction:column}
+  .help-page{flex:1;overflow-y:auto;padding:14px 16px;font-size:15px;line-height:1.5}
+  .help-page h3{margin:0 0 8px;font-size:17px;font-weight:800}
+  .help-page p{margin:0 0 10px}
+  .help-page .ex{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0 12px;font-size:14px}
+  .help-page .ex div{padding:2px 0}
+  .help-page .ok{color:var(--ok);font-weight:700}.help-page .no{color:var(--bad);font-weight:700}
+  .help-page kbd{font:inherit;font-weight:800;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:0 6px}
+  .help-pager{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 0 calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+  .help-pager button{background:none;border:1px solid var(--line);border-radius:999px;width:34px;height:30px;font:inherit;font-size:18px;color:var(--ink);cursor:pointer}
+  .help-pager button:disabled{opacity:.3;cursor:default}
+  .help-pager span{display:flex;gap:6px}
+  .help-pager i{width:7px;height:7px;border-radius:50%;background:var(--line);display:block}
+  .help-pager i.on{background:var(--ink)}
+
+  /* Word bank */
+  .bank-filters{padding:10px 14px 6px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+  .bank-filters .frow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .bank-filters .frow::-webkit-scrollbar{display:none}
+  .bank-filters button{flex:none;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .bank-filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .bank-list{flex:1;overflow-y:auto;padding:4px 16px calc(12px + env(safe-area-inset-bottom))}
+  .bank-list h4{margin:12px 0 4px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .bank-list .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+  .bank-list h4+.row{border-top:0}
+  .bank-list .w{flex:1;min-width:0}
+  .bank-list .tgt{display:block;font-weight:800;font-size:16px;overflow-wrap:anywhere}
+  .bank-list .nat{display:block;font-size:13px;color:var(--muted);font-weight:600}
+  .bank-list .meta{flex:none;text-align:right;font-size:12px;font-weight:700;color:var(--muted);line-height:1.3}
+  .bank-list .meta b{color:var(--bad)}
+  .bank-list .tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:var(--okbg);color:var(--ok);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle}
+  .bank-foot{display:flex;align-items:center;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+  .bank-foot button{background:var(--panel);border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;font:inherit;font-size:13px;font-weight:800;color:var(--ink);cursor:pointer}
+  .bank-foot span{font-size:12px;color:var(--muted);font-weight:600;margin-left:auto;text-align:right}
+  .bank-list .empty{padding:24px 0;color:var(--muted);font-size:15px;text-align:center}
+
+  .scope{display:flex;gap:6px;margin-bottom:-6px}
+  .scope[hidden]{display:none}
+  .scope button,#sub .tab{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+  .scope button[aria-pressed="true"],#sub .tab[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  #sub .tab{margin:0 6px 0 0}
+  .say{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1.5px solid var(--line);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;font-weight:800;color:var(--ink);cursor:pointer;vertical-align:middle;margin-left:8px}
+  .say:active{background:var(--bg)}
+  .say.speaking{border-color:var(--ok);color:var(--ok)}
+  .bank-list .say{padding:3px 9px;font-size:12px;margin:0 0 0 6px}
+  .bank-list .note{display:block;font-size:13px;color:var(--muted);font-style:italic;margin-top:2px}
+  #stage{min-height:120px;padding-top:10px}
+  #prompt{margin:0;font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-.01em;overflow-wrap:anywhere}
+  #sub{margin:10px 0 0;font-size:16px;line-height:1.4;color:var(--muted);font-weight:500}
+  #sub .chip{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin:4px 6px 0 0;color:var(--ink);font-weight:600;font-size:15px}
+
+  #form{display:flex;gap:8px}
+  #go{flex:none;font:inherit;font-size:16px;font-weight:800;padding:0 18px;border:0;border-radius:12px;background:var(--ink);color:#fff;cursor:pointer}
+  #go:disabled{opacity:.45;cursor:default}
+  #go:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  #in{flex:1;min-width:0;font:inherit;font-size:20px;font-weight:600;padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);outline:none}
+  #in:focus{border-color:var(--ink)}
+  #in::placeholder{color:#A3AAB3;font-weight:500}
+  #in:disabled{opacity:.6}
+
+  .aids{display:flex;gap:10px;margin-top:-6px}
+  .aids[hidden]{display:none}
+  .aids button{background:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer}
+  .aids button:disabled{opacity:.45;cursor:default}
+  .aids button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  #sub .hint{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:20px;letter-spacing:.12em;color:var(--ink);font-weight:600;display:block;margin-top:8px}
+  .verdict.hinted{background:var(--minorbg);color:var(--minor)}
+
+  /* Frau Shego */
+  .teacher{display:flex;gap:10px;align-items:flex-end;min-height:90px;margin-top:-4px}
+  #frau{width:88px;height:88px;flex:none;overflow:visible}
+  .bubble{flex:1;position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 13px;margin-bottom:14px;transition:opacity .2s}
+  .bubble::before{content:"";position:absolute;left:-6px;bottom:16px;width:11px;height:11px;background:var(--panel);border-left:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
+  .bubble .de{display:block;font-weight:800;font-size:17px;line-height:1.25}
+  .bubble .en{display:block;font-size:13px;color:var(--muted);font-weight:600;margin-top:2px}
+  .bubble .en:empty{display:none}
+  .teacher.quiet .bubble{opacity:0}
+  #frau .head,#frau .brow,#frau .mouth,#frau .lid,#frau .blush{transition:transform .22s ease,opacity .22s ease}
+  #frau .head{transform-box:fill-box;transform-origin:50% 92%}
+  #frau .brow,#frau .lid{transform-box:fill-box}
+  #frau .brow{transform-origin:50% 50%}
+  .teacher .lid{transform-origin:50% 0;transform:scaleY(0)}
+  #frau .blinklid{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0)}
+  .teacher .mouth{opacity:0}
+  .teacher .blush{opacity:0}
+  [data-face="idle"] .mouth-neutral{opacity:1}
+  [data-face="pleased"] .mouth-smile{opacity:1}
+  [data-face="pleased"] .blush{opacity:1}
+  [data-face="pleased"] .brow{transform:translateY(-3px)}
+  [data-face="pleased"] .lid{transform:scaleY(.38)}
+  [data-face="unimpressed"] .mouth-flat{opacity:1}
+  [data-face="unimpressed"] .brow-r{transform:translateY(-4.5px) rotate(-6deg)}
+  [data-face="unimpressed"] .brow-l{transform:translateY(1.5px)}
+  [data-face="unimpressed"] .lid{transform:scaleY(.5)}
+  [data-face="resigned"] .mouth-frown{opacity:1}
+  [data-face="resigned"] .brow-l{transform:translateY(-1px) rotate(-14deg)}
+  [data-face="resigned"] .brow-r{transform:translateY(-1px) rotate(14deg)}
+  [data-face="resigned"] .lid{transform:scaleY(1)}
+  [data-face="resigned"] .head{transform:rotate(-6deg)}
+  @media (prefers-reduced-motion:no-preference){
+    #frau .blinklid{animation:blink 4.6s infinite}
+    @keyframes blink{0%,92%,100%{transform:scaleY(0)}95%,97%{transform:scaleY(1)}}
+    [data-face="pleased"] .head{animation:bounce .5s ease}
+    @keyframes bounce{0%{transform:translateY(0)}35%{transform:translateY(-6px)}70%{transform:translateY(2px)}100%{transform:translateY(0)}}
+    [data-face="unimpressed"] .head{animation:tut .5s ease}
+    @keyframes tut{0%,100%{transform:rotate(0)}40%{transform:rotate(3deg)}}
+  }
+
+  #feedback{background:var(--panel);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--line)}
+  #feedback[hidden]{display:none}
+  .verdict{display:inline-flex;align-self:flex-start;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:800}
+  .verdict.ok{background:var(--okbg);color:var(--ok)}
+  .verdict.minor{background:var(--minorbg);color:var(--minor)}
+  .verdict.bad{background:var(--badbg);color:var(--bad)}
+  .answer{font-size:24px;font-weight:800;line-height:1.2}
+  .answer small{font-size:15px;font-weight:600;color:var(--muted);margin-left:8px}
+  .reason{font-size:15px;line-height:1.45;font-weight:500}
+  .example{font-size:15px;color:var(--muted);font-style:italic}
+  .next{font-size:13px;color:var(--muted);font-weight:600;margin-top:2px}
+  .auto{height:3px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:4px}
+  .auto i{display:block;height:100%;background:var(--ok);width:100%;transform-origin:left}
+  @media (prefers-reduced-motion:no-preference){.auto i{animation:drain 2.5s linear forwards}@keyframes drain{to{transform:scaleX(0)}}}
+  .g{font-weight:800}
+  .g.der{color:var(--der)} .g.die{color:var(--die)} .g.das{color:var(--das)}
+
+
+  #notice{margin:0;font-size:14px;color:var(--bad);font-weight:600;min-height:1em}
+  #notice:empty{display:none}
+  #notice.good{color:var(--ok)}
+
+  nav.modes{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;background:var(--bg);padding:8px 18px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+  nav.modes div{display:flex;width:100%;max-width:444px}
+  nav.modes button{flex:1;background:none;border:0;border-bottom:3px solid transparent;padding:10px 0 8px;font:inherit;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer}
+  nav.modes button[aria-current="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+  nav.modes button.dir{flex:0 0 auto;padding-left:12px;padding-right:0;font-size:13px;letter-spacing:.02em;border-bottom-color:transparent}
+  nav.modes button.dir:disabled{opacity:.4}
+  nav.modes button:focus-visible,#in:focus-visible,.strip button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  .busy #prompt{color:var(--muted);font-weight:600;font-size:22px}
+  @media (prefers-reduced-motion:no-preference){
+    #feedback{animation:pop .18s ease-out}
+    @keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="strip">
+    <span><b id="progress">0</b>/20</span>
+    <span><span id="streakLbl">streak</span> <b id="streak">0</b></span>
+    <span><span id="bestLbl">best</span> <b id="best">0</b></span>
+    <button id="helpBtn" class="help-btn" aria-haspopup="dialog" title="Help">?</button>
+    <button id="keyBtn" hidden>Key</button>
+    <button id="bankBtn">Words</button>
+  </header>
+
+  <div id="scope" class="scope" hidden>
+    <button type="button" data-scope="words" aria-pressed="true">Words</button>
+    <button type="button" data-scope="slang" aria-pressed="false">Slang</button>
+  </div>
+
+  <section id="stage" aria-live="polite">
+    <h1 id="prompt">Loading…</h1>
+    <p id="sub"></p>
+  </section>
+
+  <div class="teacher" id="teacher" data-face="idle">
+    <svg id="frau" viewBox="0 0 120 120" aria-hidden="true">
+      <g class="body">
+        <rect x="52" y="88" width="16" height="18" fill="#E6B48B"/>
+        <path d="M18 122 C18 104 34 99 50 99 L60 108 L70 99 C86 99 102 104 102 122 Z" fill="#5E8A6C"/>
+        <path d="M50 99 L60 108 L70 99 L66 96 L60 103 L54 96 Z" fill="#F4EFE4"/>
+      </g>
+      <g class="head">
+        <circle cx="60" cy="19" r="13" fill="#3E2A1F"/>
+        <ellipse cx="60" cy="50" rx="38" ry="31" fill="#3E2A1F"/>
+        <ellipse cx="25" cy="64" rx="5" ry="7" fill="#F1C9A5"/>
+        <ellipse cx="95" cy="64" rx="5" ry="7" fill="#F1C9A5"/>
+        <circle cx="25" cy="71" r="1.9" fill="#C9A24A"/>
+        <circle cx="95" cy="71" r="1.9" fill="#C9A24A"/>
+        <ellipse cx="60" cy="62" rx="33" ry="37" fill="#F1C9A5"/>
+        <path d="M27 60 C25 36 40 25 60 25 C80 25 95 36 93 60 C91 45 83 38 75 38 C67 38 60 41 51 41 C41 41 32 46 27 60 Z" fill="#3E2A1F"/>
+        <path d="M27 60 C30 50 36 44 44 42" fill="none" stroke="#5A3F2E" stroke-width="1.5" stroke-linecap="round"/>
+        <g class="blush">
+          <ellipse cx="41" cy="75" rx="6" ry="3.5" fill="#E8927C" opacity=".5"/>
+          <ellipse cx="79" cy="75" rx="6" ry="3.5" fill="#E8927C" opacity=".5"/>
+        </g>
+        <g class="eye">
+          <ellipse cx="47" cy="63" rx="6.5" ry="5.5" fill="#fff"/>
+          <circle cx="47.5" cy="63.5" r="3.5" fill="#1B1F24"/>
+          <circle cx="49" cy="62" r="1.1" fill="#fff"/>
+          <rect class="blinklid" x="39" y="56.5" width="16" height="13" fill="#F1C9A5"/>
+          <rect class="lid lid-l" x="39" y="56.5" width="16" height="13" fill="#F1C9A5"/>
+        </g>
+        <g class="eye">
+          <ellipse cx="73" cy="63" rx="6.5" ry="5.5" fill="#fff"/>
+          <circle cx="73.5" cy="63.5" r="3.5" fill="#1B1F24"/>
+          <circle cx="75" cy="62" r="1.1" fill="#fff"/>
+          <rect class="blinklid" x="65" y="56.5" width="16" height="13" fill="#F1C9A5"/>
+          <rect class="lid lid-r" x="65" y="56.5" width="16" height="13" fill="#F1C9A5"/>
+        </g>
+        <g fill="none" stroke="#1B1F24" stroke-width="2.4" stroke-linecap="round">
+          <circle cx="47" cy="63" r="11.5"/><circle cx="73" cy="63" r="11.5"/>
+          <path d="M58.5 62 L61.5 62"/><path d="M35.5 61 L28 58.5"/><path d="M84.5 61 L92 58.5"/>
+        </g>
+        <g fill="none" stroke="#3E2A1F" stroke-width="2.8" stroke-linecap="round">
+          <path class="brow brow-l" d="M38 49 Q47 44.5 56 48"/>
+          <path class="brow brow-r" d="M64 48 Q73 44.5 82 49"/>
+        </g>
+        <path d="M60 67 Q57 74 61 75.5" fill="none" stroke="#D9A07A" stroke-width="2" stroke-linecap="round"/>
+        <g fill="none" stroke="#B4574E" stroke-width="2.6" stroke-linecap="round">
+          <path class="mouth mouth-neutral" d="M53 86 Q60 89.5 67 86"/>
+          <path class="mouth mouth-smile" d="M50 84 Q60 93 70 84"/>
+          <path class="mouth mouth-flat" d="M52 86.5 L68 86.5"/>
+          <path class="mouth mouth-frown" d="M51 90 Q60 84 69 90"/>
+        </g>
+      </g>
+    </svg>
+    <div class="bubble" id="bubble"><span class="de"></span><span class="en"></span></div>
+  </div>
+
+  <section id="feedback" hidden></section>
+
+  <form id="form" autocomplete="off">
+    <input id="in" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" placeholder="Type the German">
+    <button id="go" type="submit">Check</button>
+  </form>
+  <div class="aids" id="aids">
+    <button id="hintBtn" type="button">Hint</button>
+    <button id="idkBtn" type="button">I don't know</button>
+  </div>
+
+
+  <p id="notice"></p>
+</main>
+
+<div id="help" class="help" hidden>
+  <div class="help-box" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <header class="help-head"><span id="helpTitle">Help</span><button id="helpClose" aria-label="Close">×</button></header>
+    <div class="help-body">
+      <nav id="helpNav" class="help-nav"></nav>
+      <div class="help-pane">
+        <div id="helpPage" class="help-page"></div>
+        <div class="help-pager"><button id="hPrev" aria-label="Previous page">‹</button><span id="hDots"></span><button id="hNext" aria-label="Next page">›</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="bank" class="help" hidden>
+  <div class="help-box" role="dialog" aria-modal="true" aria-labelledby="bankTitle">
+    <header class="help-head"><span id="bankTitle">Words</span><button id="bankClose" aria-label="Close">×</button></header>
+    <div class="bank-filters" id="bankFilters"></div>
+    <div class="bank-list" id="bankList"></div>
+    <div class="bank-foot">
+      <button type="button" id="exportBtn">Export</button>
+      <button type="button" id="importBtn">Import</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <span id="backupInfo"></span>
+    </div>
+  </div>
+</div>
+
+<nav class="modes"><div>
+  <button data-mode="recall" aria-current="true">Recall</button>
+  <button data-mode="sentence">Sentence</button>
+  <button data-mode="add">Add word</button>
+  <button id="dirBtn" class="dir" title="Switch direction">EN→DE</button>
+</div></nav>
+
+<script>
+/* ---------- DATA SPINE ---------- */
+const w = (de,en,gender,plural,theme,example,exampleEn,alt) => ({de,en,gender,plural,theme,example,exampleEn,alt:alt||[],source:"app",srs:{level:0,lastSeen:null,misses:0}});
+const SEED = [
+  // greetings / small talk
+  w("Hallo","hello",null,null,"greetings","Hallo, wie geht's?","Hello, how are you?"),
+  w("Guten Morgen","good morning",null,null,"greetings","Guten Morgen, Frau Müller!","Good morning, Mrs Müller!"),
+  w("Tschüss","bye",null,null,"greetings","Tschüss, bis morgen!","Bye, see you tomorrow!",["tschüs"]),
+  w("Wie geht's?","how are you? (informal)",null,null,"greetings","Hallo Anna, wie geht's?","Hi Anna, how are you?",["wie gehts","wie geht es dir"]),
+  w("Danke","thank you",null,null,"greetings","Danke, sehr gut.","Thanks, very well."),
+  w("Bitte","please / you're welcome",null,null,"greetings","Ein Wasser, bitte.","A water, please."),
+  w("Entschuldigung","excuse me / sorry",null,null,"greetings","Entschuldigung, wo ist der Bahnhof?","Excuse me, where is the station?"),
+  w("Name","name","der","Namen","greetings","Mein Name ist Tim.","My name is Tim."),
+  w("Frau","woman / Mrs","die","Frauen","greetings","Das ist Frau Schmidt.","This is Mrs Schmidt."),
+  w("Mann","man","der","Männer","greetings","Der Mann heißt Peter.","The man is called Peter."),
+  w("Freund","friend (male)","der","Freunde","greetings","Das ist mein Freund Jonas.","This is my friend Jonas."),
+  w("Freundin","friend (female)","die","Freundinnen","greetings","Das ist meine Freundin Lena.","This is my friend Lena."),
+  w("Wetter","weather","das",null,"greetings","Das Wetter ist heute schön.","The weather is nice today."),
+  w("heißen","to be called",null,null,"greetings","Ich heiße Tim.","I'm called Tim."),
+  w("kommen","to come",null,null,"greetings","Ich komme aus den USA.","I come from the USA."),
+  w("wohnen","to live (reside)",null,null,"greetings","Ich wohne in Berlin.","I live in Berlin."),
+  w("sprechen","to speak",null,null,"greetings","Sprechen Sie Englisch?","Do you speak English?"),
+  // directions
+  w("links","left",null,null,"directions","Gehen Sie hier links.","Go left here."),
+  w("rechts","right",null,null,"directions","Die Post ist rechts.","The post office is on the right."),
+  w("geradeaus","straight ahead",null,null,"directions","Fahren Sie geradeaus.","Go straight ahead."),
+  w("Straße","street","die","Straßen","directions","Die Straße ist lang.","The street is long."),
+  w("Bahnhof","train station","der","Bahnhöfe","directions","Wo ist der Bahnhof?","Where is the train station?"),
+  w("Haltestelle","bus/tram stop","die","Haltestellen","directions","Die Haltestelle ist da vorne.","The bus stop is up ahead."),
+  w("Zug","train","der","Züge","directions","Der Zug kommt um acht.","The train comes at eight."),
+  w("Auto","car","das","Autos","directions","Das Auto ist neu.","The car is new."),
+  w("Stadt","city","die","Städte","directions","Die Stadt ist groß.","The city is big."),
+  w("weit","far",null,null,"directions","Der Bahnhof ist nicht weit.","The station is not far."),
+  w("nah","near",null,null,"directions","Das Hotel ist ganz nah.","The hotel is very near."),
+  w("Ecke","corner","die","Ecken","directions","Die Bank ist an der Ecke.","The bank is on the corner."),
+  w("Brücke","bridge","die","Brücken","directions","Wir gehen über die Brücke.","We walk over the bridge."),
+  w("fahren","to drive / go (by vehicle)",null,null,"directions","Ich fahre nach Hamburg.","I'm driving to Hamburg."),
+  w("gehen","to go / walk",null,null,"directions","Ich gehe zu Fuß.","I go on foot."),
+  w("suchen","to look for",null,null,"directions","Ich suche die Post.","I'm looking for the post office."),
+  // daily life
+  w("Haus","house","das","Häuser","daily","Das Haus ist alt.","The house is old."),
+  w("Wohnung","apartment","die","Wohnungen","daily","Die Wohnung hat drei Zimmer.","The apartment has three rooms."),
+  w("Arbeit","work","die",null,"daily","Die Arbeit beginnt um neun.","Work starts at nine."),
+  w("Geld","money","das",null,"daily","Ich habe kein Geld.","I have no money."),
+  w("Schlüssel","key","der","Schlüssel","daily","Wo ist der Schlüssel?","Where is the key?"),
+  w("Handy","mobile phone","das","Handys","daily","Mein Handy ist kaputt.","My phone is broken."),
+  w("Hund","dog","der","Hunde","daily","Der Hund schläft.","The dog is sleeping."),
+  w("Katze","cat","die","Katzen","daily","Die Katze ist müde.","The cat is tired."),
+  w("Kind","child","das","Kinder","daily","Das Kind spielt.","The child is playing."),
+  w("Familie","family","die","Familien","daily","Meine Familie wohnt in Köln.","My family lives in Cologne."),
+  w("arbeiten","to work",null,null,"daily","Ich arbeite viel.","I work a lot."),
+  w("schlafen","to sleep",null,null,"daily","Ich schlafe acht Stunden.","I sleep eight hours."),
+  w("kaufen","to buy",null,null,"daily","Ich kaufe ein Handy.","I'm buying a phone."),
+  w("brauchen","to need",null,null,"daily","Ich brauche einen Schlüssel.","I need a key."),
+  w("müde","tired",null,null,"daily","Ich bin sehr müde.","I am very tired."),
+  w("Fenster","window","das","Fenster","daily","Das Fenster ist offen.","The window is open."),
+  // opinions
+  w("gut","good",null,null,"opinions","Das Buch ist gut.","The book is good."),
+  w("schlecht","bad",null,null,"opinions","Der Film ist schlecht.","The film is bad."),
+  w("schön","nice / beautiful",null,null,"opinions","Die Stadt ist schön.","The city is beautiful."),
+  w("interessant","interesting",null,null,"opinions","Das ist interessant.","That is interesting."),
+  w("langweilig","boring",null,null,"opinions","Der Film ist langweilig.","The film is boring."),
+  w("wichtig","important",null,null,"opinions","Das ist sehr wichtig.","That is very important."),
+  w("Meinung","opinion","die","Meinungen","opinions","Das ist meine Meinung.","That is my opinion."),
+  w("Problem","problem","das","Probleme","opinions","Das ist kein Problem.","That is no problem."),
+  w("Frage","question","die","Fragen","opinions","Ich habe eine Frage.","I have a question."),
+  w("Idee","idea","die","Ideen","opinions","Das ist eine gute Idee.","That is a good idea."),
+  w("glauben","to believe",null,null,"opinions","Ich glaube, das stimmt.","I believe that's right."),
+  w("denken","to think",null,null,"opinions","Ich denke, ja.","I think so."),
+  w("finden","to find / to think (opinion)",null,null,"opinions","Ich finde das gut.","I think that's good."),
+  w("mögen","to like",null,null,"opinions","Ich mag Musik.","I like music."),
+  w("vielleicht","maybe",null,null,"opinions","Vielleicht morgen.","Maybe tomorrow."),
+  w("natürlich","of course",null,null,"opinions","Ja, natürlich!","Yes, of course!"),
+  // time / dates
+  w("Zeit","time","die","Zeiten","time","Ich habe keine Zeit.","I have no time."),
+  w("Uhr","clock / o'clock","die","Uhren","time","Es ist acht Uhr.","It is eight o'clock."),
+  w("Tag","day","der","Tage","time","Der Tag ist lang.","The day is long."),
+  w("Woche","week","die","Wochen","time","Die Woche hat sieben Tage.","The week has seven days."),
+  w("Monat","month","der","Monate","time","Der Monat ist fast vorbei.","The month is almost over."),
+  w("Jahr","year","das","Jahre","time","Das Jahr beginnt im Januar.","The year begins in January."),
+  w("heute","today",null,null,"time","Heute ist Mittwoch.","Today is Wednesday."),
+  w("morgen","tomorrow",null,null,"time","Morgen habe ich frei.","Tomorrow I have the day off."),
+  w("gestern","yesterday",null,null,"time","Gestern war ich müde.","Yesterday I was tired."),
+  w("Montag","Monday","der","Montage","time","Am Montag arbeite ich.","On Monday I work."),
+  w("Wochenende","weekend","das","Wochenenden","time","Am Wochenende schlafe ich lange.","At the weekend I sleep late."),
+  w("Morgen","morning","der","Morgen","time","Der Morgen ist kalt.","The morning is cold."),
+  w("Abend","evening","der","Abende","time","Guten Abend!","Good evening!"),
+  w("Nacht","night","die","Nächte","time","Die Nacht ist lang.","The night is long."),
+  w("spät","late",null,null,"time","Es ist schon spät.","It is already late."),
+  w("früh","early",null,null,"time","Ich stehe früh auf.","I get up early."),
+];
+
+/* Core glue words — never in SRS rotation, always available to the sentence grader. */
+const CORE = [
+  ["ich","I"],["du","you (informal)"],["er","he"],["sie","she / they"],["wir","we"],
+  ["sein","to be"],["haben","to have"],["machen","to do / make"],["können","can"],["möchten","would like"],
+  ["nicht","not"],["kein","no / not a"],["und","and"],["aber","but"],
+  ["wo","where"],["wann","when"],["was","what"],["wie","how"],["warum","why"],
+];
+const CORE_TEXT = CORE.map(([de,en]) => `${de} (${en})`).join(", ");
+
+/* Grader notes — per target word, tells the grader which specific error to name. */
+const GRADER_NOTES = {
+  "mögen": "mögen is irregular: ich mag, du magst, er/sie mag, wir mögen. Name the exact conjugation slip if present (e.g. 'ich möge / ich mage → ich mag') and check the object is accusative. Never say generic 'wrong verb form'.",
+  "finden": "finden as opinion takes an accusative object plus a bare adjective: 'Ich finde den Film gut', 'Ich finde das interessant'. Name the exact slip: wrong case on the object (den vs der), an inserted 'dass' or 'ist' ('ich finde der Film ist gut'), adjective misplaced, or verb not in second position. Never say generic 'wrong'.",
+};
+
+/* ---------- I18N ---------- */
+/* dir "de" = English speaker learning German. dir "en" = German speaker learning English. UI is in the native language. */
+const T = {
+  en: {
+    check:"Check", next:"Next", add:"Add", newSession:"New session", hint:"Hint", noHints:"No more hints", idk:"I don't know",
+    streak:"streak", best:"best", bank:"Words", key:"Key",
+    dictTab:"Dictionary", slangTab:"Slang", scopeWords:"Words", scopeSlang:"Slang",
+    slangWord:"Slang: the word, as you heard it", slangWordSub:"Spell it how you'd say it. Include the article if it's a noun.", slangMeaning:w=>`What does "${w}" mean?`, slangNote:"Where did you hear it? Optional — Enter to skip",
+    slangPh1:"e.g. Digga", slangPh2:"e.g. mate, bro", slangPh3:"e.g. from Lena, casual only", slangSaved:"Slang saved", sayIt:"Say it", slangDup:"Already in your slang", noSlangYet:"No slang logged yet — add some under Add word.",
+    export:"Export", import:"Import", backupHint:"Backup file: words, levels, slang, streak. Not the key.", backupSaved:n=>`Backup saved with ${n} words.`, restored:(a,u)=>`Restored: ${a} new, ${u} updated.`, restoreBad:"That file isn't a Hin & Her backup.", lastBackup:d=>`Last backup ${d}`, noBackup:"No backup yet",
+    mostMissed:"Most missed", allWords:"All words", fAll:"All", fApp:"App", fMine:"Mine", fDue:"Due", fMissed:"Missed", allThemes:"All themes", mineTag:"mine", noMatch:"No words match.", modes:{recall:"Recall", sentence:"Sentence", add:"Add word"}, dirLabel:"EN→DE",
+    typeTarget:"Type the German", typeSentence:"Type the German sentence", enterNext:"Enter for next", enterNew:"Enter for a new session",
+    sessionDone:(r,n)=>`Session done: ${r} of ${n}`, sessionSub:"Enter starts a new one.",
+    correct:"Correct", correctHint:n=>`Correct, with ${n===1?"a hint":n+" hints"}`, wrong:"Wrong", didntKnow:"Didn't know", minor:"Minor error",
+    nounChip:"noun, article required", hintChip:"hint", pl:"pl.", youWrote:"You wrote:", level:n=>`Level ${n}`, noLevelUp:" (no level-up with hints)", enterForNext:"Enter for next.", autoNext:"Next in a moment. Enter to skip.",
+    skipped:"Skipped.", needArticle:g=>`Word's right, but nouns need their article: ${g}.`, wrongArticle:(de,g,m)=>`Wrong article. ${de} is ${g}, not ${m}.`,
+    building:"Building a prompt…", use:"Use:", targetsUp:"Targets levelled up.", targetsReset:"Targets reset to level 0.", targetsSame:"Targets unchanged.",
+    addTitle:"Add a word", addSub:n=>`Type it in English or German. ${n} words in the bank.`, addPh:"e.g. neighbour or der Nachbar", looking:"Looking it up…",
+    added:"Added", already:"Already in the bank", nowWords:n=>`Now ${n} words.`, enterAnother:"Enter to add another.",
+    apiBack:"API unavailable — back to Recall.", gradeFail:"Couldn't grade that — check your connection and press Enter to retry, or switch to Recall.",
+    lookupFail:"Couldn't look that up — press Enter to retry, or switch to Recall.", hintFail:"Hint failed — check your connection and try again.",
+    typeSentenceFirst:"Type a sentence, or tap I don't know.", typeWordFirst:"Type a word first.",
+    misses:n=>`${n} miss${n===1?"":"es"}`, nothingYet:"Nothing yet — answer a few words first.", saveFail:"Save failed — progress may not persist.", standalone:"Standalone: set an API key for Sentence and Add modes. Recall works without one.",
+    keyPrompt:"Anthropic API key (stored only in this browser):", keyRemoved:"API key removed.", keyTesting:"Testing the key…", keyOk:"Key works. Sentence and Add modes are live.", keyBad:d=>`Key rejected: ${d}`, keyNet:"Couldn't reach the API — check your connection.",
+    themes:{greetings:"greetings", directions:"directions", daily:"daily life", opinions:"opinions", time:"time", other:"other", slang:"slang"},
+  },
+  de: {
+    check:"Prüfen", next:"Weiter", add:"Hinzufügen", newSession:"Neue Runde", hint:"Tipp", noHints:"Keine Tipps mehr", idk:"Weiß ich nicht",
+    streak:"Serie", best:"Rekord", bank:"Wörter", key:"Key",
+    dictTab:"Wörterbuch", slangTab:"Slang", scopeWords:"Wörter", scopeSlang:"Slang",
+    slangWord:"Slang: das Wort, wie du es gehört hast", slangWordSub:"Schreib es so, wie man es sagt.", slangMeaning:w=>`Was bedeutet „${w}“?`, slangNote:"Wo hast du es gehört? Optional — Enter zum Überspringen",
+    slangPh1:"z. B. mate", slangPh2:"z. B. Kumpel, Alter", slangPh3:"z. B. von Tom, nur locker", slangSaved:"Slang gespeichert", sayIt:"Anhören", slangDup:"Schon in deinem Slang", noSlangYet:"Noch kein Slang — füge welchen unter „Wort +“ hinzu.",
+    export:"Sichern", import:"Wiederherstellen", backupHint:"Sicherung: Wörter, Stufen, Slang, Serie. Nicht der Key.", backupSaved:n=>`Sicherung mit ${n} Wörtern gespeichert.`, restored:(a,u)=>`Wiederhergestellt: ${a} neu, ${u} aktualisiert.`, restoreBad:"Das ist keine Hin-&-Her-Sicherung.", lastBackup:d=>`Letzte Sicherung ${d}`, noBackup:"Noch keine Sicherung",
+    mostMissed:"Am häufigsten falsch", allWords:"Alle Wörter", fAll:"Alle", fApp:"App", fMine:"Meine", fDue:"Fällig", fMissed:"Fehler", allThemes:"Alle Themen", mineTag:"meins", noMatch:"Keine Treffer.", modes:{recall:"Abfrage", sentence:"Satz", add:"Wort +"}, dirLabel:"DE→EN",
+    typeTarget:"Auf Englisch eingeben", typeSentence:"Englischen Satz eingeben", enterNext:"Enter für das nächste", enterNew:"Enter für eine neue Runde",
+    sessionDone:(r,n)=>`Runde fertig: ${r} von ${n}`, sessionSub:"Enter startet eine neue.",
+    correct:"Richtig", correctHint:n=>`Richtig, mit ${n===1?"Tipp":n+" Tipps"}`, wrong:"Falsch", didntKnow:"Nicht gewusst", minor:"Kleiner Fehler",
+    nounChip:"Nomen", hintChip:"Tipp", pl:"Pl.", youWrote:"Du hast geschrieben:", level:n=>`Stufe ${n}`, noLevelUp:" (mit Tipp keine Stufe höher)", enterForNext:"Enter für das nächste.", autoNext:"Gleich weiter. Enter zum Überspringen.",
+    skipped:"Übersprungen.", needArticle:g=>``, wrongArticle:(de,g,m)=>``,
+    building:"Aufgabe wird erstellt…", use:"Benutze:", targetsUp:"Wörter eine Stufe höher.", targetsReset:"Wörter zurück auf Stufe 0.", targetsSame:"Wörter unverändert.",
+    addTitle:"Wort hinzufügen", addSub:n=>`Auf Deutsch oder Englisch eingeben. ${n} Wörter gespeichert.`, addPh:"z. B. Nachbar oder neighbour", looking:"Wird nachgeschlagen…",
+    added:"Hinzugefügt", already:"Schon gespeichert", nowWords:n=>`Jetzt ${n} Wörter.`, enterAnother:"Enter für ein weiteres.",
+    apiBack:"API nicht erreichbar — zurück zur Abfrage.", gradeFail:"Konnte nicht bewerten — Verbindung prüfen und Enter zum Wiederholen, oder zur Abfrage wechseln.",
+    lookupFail:"Konnte nicht nachschlagen — Enter zum Wiederholen, oder zur Abfrage wechseln.", hintFail:"Tipp fehlgeschlagen — Verbindung prüfen und noch einmal versuchen.",
+    typeSentenceFirst:"Schreib einen Satz oder tippe auf „Weiß ich nicht“.", typeWordFirst:"Zuerst ein Wort eingeben.",
+    misses:n=>`${n} Fehler`, nothingYet:"Noch nichts — beantworte erst ein paar Wörter.", saveFail:"Speichern fehlgeschlagen — Fortschritt geht eventuell verloren.", standalone:"Standalone: für Satz- und Wort-Modus einen API-Key setzen. Die Abfrage funktioniert ohne.",
+    keyPrompt:"Anthropic API-Key (wird nur in diesem Browser gespeichert):", keyRemoved:"API-Key entfernt.", keyTesting:"Key wird geprüft…", keyOk:"Key funktioniert. Satz- und Wort-Modus sind bereit.", keyBad:d=>`Key abgelehnt: ${d}`, keyNet:"API nicht erreichbar — Verbindung prüfen.",
+    themes:{greetings:"Begrüßung", directions:"Wegbeschreibung", daily:"Alltag", opinions:"Meinungen", time:"Zeit", other:"Sonstiges", slang:"Slang"},
+  },
+};
+let dir = "de";
+const t = () => T[dir === "de" ? "en" : "de"];      // UI strings in the native language
+const LEARN = () => dir === "de" ? "German" : "English";
+const NATIVE = () => dir === "de" ? "English" : "German";
+
+/* ---------- SRS ---------- */
+const DAY = 864e5;
+const INTERVALS = [0, 1, 3, 7, 14, 30]; // days per Leitner level
+const SESSION_SIZE = 20;
+const bankKey = () => dir === "de" ? "de-wordbank" : "en-wordbank";
+const statsKey = () => dir === "de" ? "de-stats" : "en-stats";
+const DIR_KEY = "de-direction";
+
+let bank = [], stats = { streak: 0, best: 0 };
+let mode = "recall", phase = "ask", busy = false;
+let session = [], idx = 0, sessionRight = 0;
+let current = null;      // recall word
+let sent = null;         // { prompt, targets:[words] }
+let hints = 0;           // hint presses on the current card
+let autoTimer = null;    // auto-advance after a clean correct answer
+let scope = "words";     // recall rotation: "words" (everything but slang) or "slang"
+let addKind = "dict";    // add mode: "dict" (API) or "slang" (manual)
+let slangStep = 0, slangDraft = { word: "", meaning: "" };
+const isSlang = x => x.theme === "slang";
+const AUTO_MS = 2500;
+
+const $ = id => document.getElementById(id);
+const el = { prompt: $("prompt"), sub: $("sub"), input: $("in"), fb: $("feedback"),
+             bankBtn: $("bankBtn"), notice: $("notice"), progress: $("progress"), streak: $("streak"), best: $("best"),
+             streakLbl: $("streakLbl"), bestLbl: $("bestLbl"),
+             aids: $("aids"), hintBtn: $("hintBtn"), idkBtn: $("idkBtn"), teacher: $("teacher"), bubble: $("bubble"),
+             form: $("form"), go: $("go"), keyBtn: $("keyBtn"), dirBtn: $("dirBtn"), scope: $("scope") };
+const STANDALONE = !window.storage;
+
+/* ---------- FRAU SHEGO ---------- */
+/* Pairs are [German, English]. She speaks the language being learned; the gloss is the native one. */
+const LINES = {
+  hello:  [["Guten Tag. Fangen wir an.","Good day. Let's begin."],["So. Los geht's.","Right. Off we go."],["Hin und her. Immer weiter.","Back and forth. Keep going."]],
+  right:  [["Richtig!","Right!"],["Genau.","Exactly."],["Sehr gut.","Very good."],["Prima!","Great!"],["Ganz genau.","Precisely."],["So ist es.","That's it."],["Gut gemacht.","Well done."]],
+  hinted: [["Na also.","There you go."],["Siehst du?","See?"],["Geht doch.","See, you can."],["Mit Hilfe. Aber gut.","With help. But fine."]],
+  minor:  [["Fast.","Almost."],["Fast richtig.","Almost right."],["Kleiner Fehler.","Small mistake."],["Beinahe.","Nearly."]],
+  wrong:  [["Nicht ganz.","Not quite."],["Nein.","No."],["Noch einmal.","Once more."],["Leider nein.","Sadly, no."],["Hm. Nein.","Hm. No."]],
+  idk:    [["Na ja.","Oh well."],["Nächstes Mal.","Next time."],["Schade.","Pity."],["Das üben wir noch.","We'll practise that."],["Aha.","I see."]],
+  hint:   [["Schon wieder?","Again?"],["Wirklich?","Really?"],["Na gut. Einmal.","Fine. Once."],["Denk nach.","Think."],["Das weißt du doch.","You know this."],["Hm.","Hm."]],
+  hint2:  [["Noch einen?","Another one?"],["Ich sage nichts mehr.","I'm saying no more."],["Zum letzten Mal.","For the last time."]],
+  added:  [["Gut. Ein neues Wort.","Good. A new word."],["Notiert.","Noted."]],
+  done:   [["Feierabend.","Done for today."],["Bis morgen.","See you tomorrow."],["Genug für heute.","Enough for today."]],
+  think:  [["Moment…","One moment…"]],
+};
+const UNREACHABLE = ["Ich bin gerade nicht erreichbar.", "I'm not reachable right now."];
+const FACE = { hello:"idle", right:"pleased", hinted:"pleased", minor:"pleased", wrong:"unimpressed", idk:"resigned", hint:"unimpressed", hint2:"unimpressed", added:"pleased", done:"pleased", think:"idle" };
+let faceTimer = null;
+function say(key, custom) {
+  const pair = custom || LINES[key][Math.random() * LINES[key].length | 0];
+  const [main, gloss] = dir === "de" ? pair : [pair[1], pair[0]];
+  el.bubble.querySelector(".de").textContent = main || gloss;
+  el.bubble.querySelector(".en").textContent = main ? (gloss || "") : "";
+  el.teacher.classList.remove("quiet");
+  el.teacher.dataset.face = "idle"; void el.teacher.offsetWidth; // restart animations
+  el.teacher.dataset.face = FACE[key];
+  clearTimeout(faceTimer);
+  if (FACE[key] !== "idle") faceTimer = setTimeout(() => { el.teacher.dataset.face = "idle"; }, 3200);
+}
+
+/* ---------- SPEECH (slang only; browser built-in, offline) ---------- */
+const CAN_SPEAK = !!(window.speechSynthesis && window.SpeechSynthesisUtterance);
+const speakLang = () => dir === "de" ? "de-DE" : "en-US";
+function speak(text, lang, btn) {
+  if (!CAN_SPEAK || !text) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang; u.rate = 0.9;
+    const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith(lang.slice(0, 2)));
+    if (v) u.voice = v;
+    if (btn) { btn.classList.add("speaking"); u.onend = u.onerror = () => btn.classList.remove("speaking"); }
+    speechSynthesis.speak(u);
+  } catch {}
+}
+if (CAN_SPEAK) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } catch {} }
+const sayBtn = x => CAN_SPEAK && isSlang(x) ? `<button type="button" class="say" data-say="${esc(tgtText(x))}" data-lang="${speakLang()}">🔊 ${esc(t().sayIt)}</button>` : "";
+document.addEventListener("click", e => { const b = e.target.closest("button[data-say]"); if (b) speak(b.dataset.say, b.dataset.lang, b); });
+
+/* ---------- HELPERS ---------- */
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const norm = s => String(s ?? "").toLowerCase().trim()
+  .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+  .replace(/[’‘`´]/g,"'").replace(/[?!.,;:]/g,"").replace(/\s+/g," ").trim();
+const keyOf = x => norm(x.de) + "|" + (x.gender || "");
+const isDue = x => !x.srs.lastSeen || (Date.now() - x.srs.lastSeen) >= INTERVALS[x.srs.level] * DAY;
+const dueAt = x => x.srs.lastSeen ? x.srs.lastSeen + INTERVALS[x.srs.level] * DAY : 0;
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const fullDe = x => x.gender ? `<span class="g ${x.gender}">${x.gender}</span> ${esc(x.de)}` : esc(x.de);
+const fullDeText = x => x.gender ? `${x.gender} ${x.de}` : x.de;
+/* English forms: "friend (male)" → friend; "please / you're welcome" → both; "to buy" → also "buy" */
+const enForms = x => {
+  const base = x.en.replace(/\(.*?\)/g, "").split("/").map(v => v.trim()).filter(Boolean);
+  const out = [];
+  for (const b of base) { out.push(b); if (/^to /.test(b)) out.push(b.slice(3)); out.push(b.replace(/'/g, "")); }
+  return out.map(norm);
+};
+const enPrimary = x => x.en.replace(/\(.*?\)/g, "").split("/")[0].trim().replace(/^to /, "");
+/* target = what the learner types; native = what they're shown */
+const tgtHtml = x => dir === "de" ? fullDe(x) : esc(x.en);
+const tgtText = x => dir === "de" ? fullDeText(x) : x.en;
+const natHtml = x => dir === "de" ? esc(x.en) : fullDe(x);
+const exampleOf = x => dir === "de" ? x.example : (x.exampleEn || "");
+
+/* ---------- STORAGE ---------- */
+async function sget(key) {
+  try {
+    if (window.storage) { const r = await window.storage.get(key, false); return r && r.value ? JSON.parse(r.value) : null; }
+    const v = localStorage.getItem(key); return v ? JSON.parse(v) : null;
+  } catch { return null; }
+}
+async function sset(key, val) {
+  try {
+    if (window.storage) { const r = await window.storage.set(key, JSON.stringify(val), false); if (!r) notice(t().saveFail); }
+    else localStorage.setItem(key, JSON.stringify(val));
+  } catch { notice(t().saveFail); }
+}
+async function save() { await sset(bankKey(), bank); await sset(statsKey(), stats); }
+
+async function loadBank() {
+  const stored = await sget(bankKey());
+  if (Array.isArray(stored) && stored.length) {
+    bank = stored.map(x => ({ alt: [], ...x, srs: { level: 0, lastSeen: null, misses: 0, ...(x.srs || {}) } }));
+    const byKey = new Map(bank.map(x => [keyOf(x), x]));
+    const seedKeys = new Set(SEED.map(keyOf));
+    for (const x of bank) if (!x.source) x.source = seedKeys.has(keyOf(x)) ? "app" : "self";
+    for (const sd of SEED) {
+      const have = byKey.get(keyOf(sd));
+      if (!have) bank.push(JSON.parse(JSON.stringify(sd)));
+      else if (!have.exampleEn && sd.exampleEn) have.exampleEn = sd.exampleEn; // backfill new field, keep progress
+    }
+  } else {
+    bank = JSON.parse(JSON.stringify(SEED));
+  }
+  const st = await sget(statsKey());
+  stats = st ? { streak: 0, best: 0, ...st } : { streak: 0, best: 0 };
+}
+/* One-time setup from a link: #key=sk-ant-…&dir=en  — read, stored on this device, then removed from the address bar. */
+let linkKey = false;
+function applyLinkSetup() {
+  const h = location.hash.replace(/^#/, "");
+  if (!h) return;
+  const q = new URLSearchParams(h);
+  const k = (q.get("key") || "").trim(), d = q.get("dir");
+  try {
+    if (k) { localStorage.setItem("de-apikey", k); linkKey = true; }
+    if (d === "de" || d === "en") { dir = d; localStorage.setItem("de-direction-link", d); }
+  } catch {}
+  history.replaceState(null, "", location.pathname + location.search);
+}
+async function load() {
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch {}
+  applyLinkSetup();
+  const d = await sget(DIR_KEY);
+  if (d === "de" || d === "en") dir = d;
+  try { const ld = localStorage.getItem("de-direction-link"); if (ld) { dir = ld; localStorage.removeItem("de-direction-link"); await sset(DIR_KEY, dir); } } catch {}
+  await loadBank();
+  if (STANDALONE) {
+    el.keyBtn.hidden = false;
+    if (linkKey) testKey();
+    else if (!apiKey()) notice(t().standalone);
+  }
+}
+
+/* ---------- SRS updates ---------- */
+function mark(word, result) { // "ok" | "minor" | "hinted" | "bad"
+  const s = word.srs;
+  if (result === "ok") { s.level = Math.min(INTERVALS.length - 1, s.level + 1); stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+  else if (result === "bad") { s.level = 0; s.misses++; stats.streak = 0; }
+  // "minor" and "hinted": level, misses and streak stay put
+  s.lastSeen = Date.now();
+  renderStrip();
+}
+
+const inScope = x => scope === "slang" ? isSlang(x) : !isSlang(x);
+function buildSession() {
+  const pool = bank.filter(inScope);
+  const due = shuffle(pool.filter(isDue)).sort((a, b) => a.srs.level - b.srs.level);
+  let pick = due.slice(0, SESSION_SIZE);
+  if (pick.length < SESSION_SIZE) {
+    const rest = pool.filter(x => !isDue(x)).sort((a, b) => dueAt(a) - dueAt(b));
+    pick = pick.concat(rest.slice(0, SESSION_SIZE - pick.length));
+  }
+  session = pick; idx = 0; sessionRight = 0;
+  renderStrip();
+}
+
+function dueTargets(n) {
+  const words = bank.filter(x => !isSlang(x));
+  let pool = shuffle(words.filter(isDue));
+  if (pool.length < n) pool = pool.concat(shuffle(words.filter(x => !isDue(x))));
+  return pool.slice(0, n);
+}
+
+/* ---------- RENDER ---------- */
+function notice(msg, good) { el.notice.textContent = msg || ""; el.notice.classList.toggle("good", !!good); }
+function renderScope() {
+  const has = bank.some(isSlang);
+  el.scope.hidden = !(mode === "recall" && has);
+  if (!has && scope === "slang") scope = "words";
+  el.scope.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.scope === scope)));
+}
+function renderStrip() {
+  el.progress.textContent = Math.min(idx, session.length);
+  el.streak.textContent = stats.streak;
+  el.best.textContent = stats.best;
+}
+function renderChrome() {
+  const L = t();
+  el.streakLbl.textContent = L.streak; el.bestLbl.textContent = L.best;
+  el.bankBtn.textContent = L.bank; el.keyBtn.textContent = L.key;
+  el.hintBtn.textContent = L.hint; el.idkBtn.textContent = L.idk;
+  el.dirBtn.textContent = L.dirLabel;
+  el.scope.querySelector('[data-scope="words"]').textContent = L.scopeWords;
+  el.scope.querySelector('[data-scope="slang"]').textContent = L.scopeSlang;
+  document.querySelectorAll("nav.modes button[data-mode]").forEach(b => { b.textContent = L.modes[b.dataset.mode]; });
+  document.documentElement.lang = dir === "de" ? "en" : "de";
+}
+function stage(title, subHtml, busyLook) {
+  el.prompt.innerHTML = title;
+  el.sub.innerHTML = subHtml || "";
+  document.body.classList.toggle("busy", !!busyLook);
+}
+function showFeedback(html) { el.fb.innerHTML = html; el.fb.hidden = false; phase = "feedback"; el.input.value = ""; el.input.placeholder = t().enterNext; setBtn(t().next); focus(); }
+function setBtn(label) { el.go.textContent = label; }
+function hideFeedback() { el.fb.hidden = true; el.fb.innerHTML = ""; cancelAuto(); }
+function cancelAuto() { clearTimeout(autoTimer); autoTimer = null; }
+function advance() { if (mode === "recall") showRecall(); else if (mode === "sentence") startSentence(); else showAdd(); }
+function scheduleAuto() { cancelAuto(); autoTimer = setTimeout(() => { autoTimer = null; if (phase === "feedback") advance(); }, AUTO_MS); }
+/* Refocus the input only when the user was already typing, or on a mouse device — never after a tap on a phone. */
+const TOUCH = matchMedia("(hover: none)").matches;
+let wasTyping = false;
+function focus() { if (!TOUCH || wasTyping) setTimeout(() => el.input.focus(), 0); }
+function setBusy(b) { busy = b; el.input.disabled = b; el.go.disabled = b; el.hintBtn.disabled = b; el.idkBtn.disabled = b; el.dirBtn.disabled = b; if (!b) focus(); }
+function showAids(show) { el.aids.hidden = !show; hints = 0; el.hintBtn.textContent = t().hint; el.hintBtn.disabled = false; }
+
+/* Hint: one letter per press, capped at half the word. Article is never hinted. */
+const hintWord = x => dir === "de" ? x.de : enPrimary(x);
+function hintMax(word) { return Math.ceil(word.replace(/\s/g, "").length / 2); }
+function hintMask(word, n) {
+  let shown = 0;
+  return [...word].map(ch => {
+    if (ch === " ") return "  ";
+    if (shown < n) { shown++; return ch; }
+    return ch === "'" || ch === "?" ? ch : "_";
+  }).join("");
+}
+function chipFor(x) { return dir === "de" && x.gender ? t().nounChip : t().themes[x.theme] || x.theme; }
+function giveHint() {
+  if (busy || phase !== "ask") return;
+  if (mode === "recall") {
+    const word = hintWord(current), max = hintMax(word);
+    if (hints >= max) return;
+    hints++;
+    say(hints === 1 ? "hint" : "hint2");
+    el.sub.innerHTML = `<span class="chip">${esc(chipFor(current))}</span><span class="hint">${esc(hintMask(word, hints))}</span>`;
+    if (hints >= max) { el.hintBtn.textContent = t().noHints; el.hintBtn.disabled = true; }
+    focus();
+  } else if (mode === "sentence" && sent) {
+    teacherNudge();
+  }
+}
+
+/* Sentence hint: Frau Shego points at the rule, never at the word. Two per sentence. */
+const RULES = () => dir === "de"
+  ? "verb second, accusative after this verb, gender of the noun, negation with nicht/kein"
+  : "subject-verb-object order, a/an/the, third-person -s, present simple vs present continuous, the preposition";
+async function teacherNudge() {
+  if (hints >= 2) return;
+  hints++;
+  const draft = el.input.value.trim();
+  setBusy(true);
+  say("think");
+  try {
+    const r = await claude(
+      `You are Frau Shego, a strict but fair ${LEARN()} teacher. A learner whose native language is ${NATIVE()} (A1–A2 level) asked for a hint on translating a sentence into ${LEARN()}. Return ONLY JSON, no markdown: {"hint":"<your hint in simple ${LEARN()}, max 12 words>","gloss":"<${NATIVE()} translation of your hint>"}. Point at the grammar rule they need (${RULES()}). Never write any target ${LEARN()} word, its article, or any inflected form of it — describe the rule abstractly ("the noun after this verb takes the accusative"). Write one complete, grammatically correct ${LEARN()} sentence. ${hints === 1 ? "Tone: dry, one short sigh allowed, then the nudge." : "This is their second hint: drier and more pointed, and you may name the rule outright."}${draft ? " Comment on what they have typed so far if useful." : ""}`,
+      `${NATIVE()} prompt: ${sent.prompt}\nTarget words (${LEARN()} → ${NATIVE()}): ${sent.targets.map(x => `${tgtText(x)} → ${dir === "de" ? x.en : fullDeText(x)}`).join("; ")}\nLearner's draft so far: ${draft || "(nothing yet)"}`
+    );
+    if (!r || !r.hint) throw new Error("bad hint shape");
+    setBusy(false);
+    const hint = scrubTargets(r.hint), gloss = scrubTargets(r.gloss || "");
+    say(hints === 1 ? "hint" : "hint2", dir === "de" ? [hint, gloss] : [gloss, hint]);
+    if (hints >= 2) { el.hintBtn.textContent = t().noHints; el.hintBtn.disabled = true; }
+  } catch (e) {
+    hints--; setBusy(false);
+    say("hint", UNREACHABLE);
+    notice(t().hintFail);
+  }
+}
+/* Belt and braces: if the model leaks a target word into a hint, blank it out client-side. */
+function scrubTargets(text) {
+  let out = String(text || "");
+  for (const x of sent.targets) {
+    const forms = dir === "de"
+      ? [x.de, x.plural, x.gender ? `${x.gender} ${x.de}` : null]
+      : x.en.replace(/\(.*?\)/g, "").split("/").map(v => v.trim().replace(/^to /, ""));
+    for (const f of forms.filter(Boolean).sort((a, b) => b.length - a.length)) {
+      const re = new RegExp(f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+      out = out.replace(re, "___");
+    }
+  }
+  return out.replace(/(___\s*){2,}/g, "___ ");
+}
+function giveUp() {
+  if (busy || phase !== "ask") return;
+  if (mode === "recall") gradeRecall("");
+  else if (mode === "sentence") gradeSentence("", true);
+}
+
+/* ---------- WORD BANK SHEET ---------- */
+const bankEl = { box: $("bank"), title: $("bankTitle"), filters: $("bankFilters"), list: $("bankList"), close: $("bankClose") };
+const bf = { source: "all", due: false, missed: false, theme: "all" };
+const THEMES = ["greetings", "directions", "daily", "opinions", "time", "other", "slang"];
+const weakSort = (a, b) => b.srs.misses - a.srs.misses || a.srs.level - b.srs.level || tgtText(a).localeCompare(tgtText(b));
+function bankRow(x) {
+  const L = t();
+  return `<div class="row"><div class="w"><span class="tgt">${tgtHtml(x)}${x.source === "self" ? `<span class="tag">${esc(L.mineTag)}</span>` : ""}${sayBtn(x)}</span><span class="nat">${natHtml(x)}</span>${x.note ? `<span class="note">${esc(x.note)}</span>` : ""}</div><div class="meta">L${x.srs.level}<br>${x.srs.misses ? `<b>${esc(L.misses(x.srs.misses))}</b>` : "&nbsp;"}</div></div>`;
+}
+function renderBank() {
+  const L = t();
+  const chip = (label, on, data) => `<button type="button" aria-pressed="${on}" ${data}>${esc(label)}</button>`;
+  bankEl.filters.innerHTML =
+    `<div class="frow">${chip(L.fAll, bf.source === "all", 'data-src="all"')}${chip(L.fApp, bf.source === "app", 'data-src="app"')}${chip(L.fMine, bf.source === "self", 'data-src="self"')}` +
+    `<span style="width:6px;flex:none"></span>${chip(L.fDue, bf.due, 'data-due')}${chip(L.fMissed, bf.missed, 'data-missed')}</div>` +
+    `<div class="frow">${chip(L.allThemes, bf.theme === "all", 'data-theme="all"')}${THEMES.filter(th => bank.some(x => x.theme === th)).map(th => chip(L.themes[th] || th, bf.theme === th, `data-theme="${th}"`)).join("")}</div>`;
+  const filtered = bank.filter(x =>
+    (bf.source === "all" || x.source === bf.source) &&
+    (!bf.due || isDue(x)) && (!bf.missed || x.srs.misses > 0) &&
+    (bf.theme === "all" || x.theme === bf.theme)).sort(weakSort);
+  const anyFilter = bf.source !== "all" || bf.due || bf.missed || bf.theme !== "all";
+  bankEl.title.textContent = `${L.bank} · ${filtered.length}${anyFilter ? " / " + bank.length : ""}`;
+  let html = "";
+  if (!anyFilter) {
+    const top = bank.filter(x => x.srs.misses > 0).sort(weakSort).slice(0, 5);
+    html += `<h4>${esc(L.mostMissed)}</h4>` + (top.length ? top.map(bankRow).join("") : `<div class="empty">${esc(L.nothingYet)}</div>`);
+    html += `<h4>${esc(L.allWords)}</h4>`;
+  }
+  html += filtered.length ? filtered.map(bankRow).join("") : `<div class="empty">${esc(L.noMatch)}</div>`;
+  bankEl.list.innerHTML = html;
+}
+/* ---------- BACKUP ---------- */
+const BACKUP_KEY = "de-lastbackup";
+const bankEl2 = { exportBtn: $("exportBtn"), importBtn: $("importBtn"), importFile: $("importFile"), info: $("backupInfo") };
+async function exportBackup() {
+  const other = dir === "de" ? "en" : "de";
+  const payload = {
+    app: "hin-und-her", version: 1, exported: new Date().toISOString(),
+    banks: { [dir]: bank, [other]: (await sget(other === "de" ? "de-wordbank" : "en-wordbank")) || [] },
+    stats: { [dir]: stats, [other]: (await sget(other === "de" ? "de-stats" : "en-stats")) || { streak: 0, best: 0 } },
+    direction: dir,
+  };
+  const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `hin-und-her-backup-${payload.exported.slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  try { localStorage.setItem(BACKUP_KEY, payload.exported); } catch {}
+  const n = Object.values(payload.banks).reduce((t, b) => t + b.length, 0);
+  notice(t().backupSaved(n), true); renderBackupInfo();
+}
+/* Merge, never delete: unknown words are added; known words take whichever side was seen more recently. */
+function mergeBank(into, from) {
+  let added = 0, updated = 0;
+  const byKey = new Map(into.map(x => [keyOf(x), x]));
+  for (const x of from) {
+    if (!x || !x.de || !x.en) continue;
+    const have = byKey.get(keyOf(x));
+    if (!have) { into.push({ alt: [], source: "self", ...x, srs: { level: 0, lastSeen: null, misses: 0, ...(x.srs || {}) } }); added++; }
+    else if ((x.srs && x.srs.lastSeen || 0) > (have.srs.lastSeen || 0)) { Object.assign(have, x, { srs: { ...have.srs, ...x.srs } }); updated++; }
+    else if (x.note && !have.note) { have.note = x.note; }
+  }
+  return { added, updated };
+}
+async function importBackup(file) {
+  let data;
+  try { data = JSON.parse(await file.text()); } catch { notice(t().restoreBad); return; }
+  if (!data || data.app !== "hin-und-her" || !data.banks) { notice(t().restoreBad); return; }
+  let added = 0, updated = 0;
+  for (const d of ["de", "en"]) {
+    const incoming = Array.isArray(data.banks[d]) ? data.banks[d] : [];
+    if (!incoming.length) continue;
+    const bk = d === "de" ? "de-wordbank" : "en-wordbank", sk = d === "de" ? "de-stats" : "en-stats";
+    let target = d === dir ? bank : ((await sget(bk)) || []);
+    const r = mergeBank(target, incoming); added += r.added; updated += r.updated;
+    const st = d === dir ? stats : ((await sget(sk)) || { streak: 0, best: 0 });
+    const inc = data.stats && data.stats[d];
+    if (inc) st.best = Math.max(st.best || 0, inc.best || 0);
+    if (d === dir) { bank = target; stats = st; await save(); }
+    else { await sset(bk, target); await sset(sk, st); }
+  }
+  notice(t().restored(added, updated), true);
+  renderStrip(); renderScope(); buildSession(); if (mode === "recall") showRecall(); renderBank();
+}
+function renderBackupInfo() {
+  const L = t();
+  bankEl2.exportBtn.textContent = L.export; bankEl2.importBtn.textContent = L.import;
+  bankEl2.exportBtn.title = bankEl2.importBtn.title = L.backupHint;
+  let last = null; try { last = localStorage.getItem(BACKUP_KEY); } catch {}
+  bankEl2.info.textContent = last ? L.lastBackup(new Date(last).toLocaleDateString(dir === "de" ? "en-US" : "de-DE")) : L.noBackup;
+}
+bankEl2.exportBtn.addEventListener("click", exportBackup);
+bankEl2.importBtn.addEventListener("click", () => bankEl2.importFile.click());
+bankEl2.importFile.addEventListener("change", () => { const f = bankEl2.importFile.files[0]; bankEl2.importFile.value = ""; if (f) importBackup(f); });
+
+function openBank() { renderBank(); renderBackupInfo(); bankEl.box.hidden = false; bankEl.list.scrollTop = 0; bankEl.close.focus(); }
+function closeBank() { bankEl.box.hidden = true; focus(); }
+bankEl.filters.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.src) bf.source = b.dataset.src;
+  else if ("due" in b.dataset) bf.due = !bf.due;
+  else if ("missed" in b.dataset) bf.missed = !bf.missed;
+  else if (b.dataset.theme) bf.theme = b.dataset.theme;
+  renderBank();
+});
+bankEl.close.addEventListener("click", closeBank);
+bankEl.box.addEventListener("click", e => { if (e.target === bankEl.box) closeBank(); });
+
+/* ---------- RECALL ---------- */
+function showRecall() {
+  hideFeedback();
+  const L = t();
+  renderScope();
+  if (!session.length) { phase = "done"; showAids(false); stage(esc(L.noSlangYet), ""); el.input.value = ""; setBtn(L.newSession); return; }
+  if (idx >= session.length) {
+    phase = "done";
+    showAids(false);
+    say("done");
+    stage(esc(L.sessionDone(sessionRight, session.length)), esc(L.sessionSub));
+    el.input.placeholder = L.enterNew; el.input.value = ""; setBtn(L.newSession);
+    return;
+  }
+  current = session[idx];
+  phase = "ask";
+  showAids(true);
+  const note = isSlang(current) && current.note ? `<span class="chip">${esc(current.note)}</span>` : "";
+  stage(natHtml(current), `<span class="chip">${esc(chipFor(current))}</span>${note}`);
+  el.input.placeholder = L.typeTarget; el.input.value = ""; setBtn(L.check);
+  focus();
+}
+
+function gradeRecall(raw) {
+  const x = current, inp = norm(raw), used = hints, L = t();
+  let ok = false, reason = "";
+  if (!inp) reason = L.skipped;
+  else if (dir === "en") {
+    ok = enForms(x).includes(inp);
+  } else {
+    const targets = [norm(x.de), ...(x.alt || []).map(norm)];
+    if (x.gender) {
+      const m = inp.match(/^(der|die|das)\s+(.+)$/);
+      if (!m) reason = targets.includes(inp) ? L.needArticle(x.gender) : "";
+      else {
+        const wordOk = targets.includes(m[2]);
+        ok = wordOk && m[1] === x.gender;
+        if (wordOk && !ok) reason = L.wrongArticle(x.de, x.gender, m[1]);
+      }
+    } else ok = targets.includes(inp);
+  }
+
+  const result = ok ? (used ? "hinted" : "ok") : "bad";
+  say(result === "ok" ? "right" : result === "hinted" ? "hinted" : inp ? "wrong" : "idk");
+  mark(x, result);
+  if (ok) sessionRight++;
+  idx++; renderStrip(); save();
+  showAids(false);
+
+  const plural = dir === "de" && x.gender && x.plural ? `<small>${L.pl} ${esc(x.plural)}</small>` : "";
+  const ex = exampleOf(x);
+  showFeedback(`
+    <span class="verdict ${result}">${result === "ok" ? L.correct : result === "hinted" ? L.correctHint(used) : inp ? L.wrong : L.didntKnow}</span>
+    <div class="answer">${tgtHtml(x)}${plural}${sayBtn(x)}</div>
+    ${reason ? `<div class="reason">${esc(reason)}</div>` : ""}
+    ${!ok && inp ? `<div class="reason">${esc(L.youWrote)} ${esc(raw)}</div>` : ""}
+    ${ex ? `<div class="example">${esc(ex)}</div>` : ""}
+    <div class="next">${esc(L.level(x.srs.level))}${result === "hinted" ? esc(L.noLevelUp) : ""}. ${result === "ok" ? esc(L.autoNext) : esc(L.enterForNext)}</div>
+    ${result === "ok" ? `<div class="auto"><i></i></div>` : ""}`);
+  if (result === "ok") scheduleAuto();
+}
+
+/* ---------- API ---------- */
+/* To ship a copy with the key already inside, paste it between the quotes below.
+   Anyone who has this file then has the key — only do this for a copy you hand to one trusted person,
+   and give them their own key from your console so you can revoke it on its own. */
+const EMBEDDED_KEY = "";
+function apiKey() { try { return localStorage.getItem("de-apikey") || EMBEDDED_KEY; } catch { return EMBEDDED_KEY; } }
+function setApiKey() {
+  const k = prompt(t().keyPrompt, apiKey());
+  if (k === null) return;
+  try { k.trim() ? localStorage.setItem("de-apikey", k.trim()) : localStorage.removeItem("de-apikey"); } catch {}
+  if (!k.trim()) { notice(t().keyRemoved); return; }
+  testKey();
+}
+async function testKey() {
+  notice(t().keyTesting);
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": apiKey(), "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 5, messages: [{ role: "user", content: "Reply with OK." }] })
+    });
+    if (res.ok) { notice(t().keyOk, true); say("right"); return; }
+    let detail = "HTTP " + res.status;
+    try { const j = await res.json(); if (j.error && j.error.message) detail = j.error.message; } catch {}
+    notice(t().keyBad(detail));
+  } catch (e) {
+    notice(t().keyNet);
+  }
+}
+async function claude(system, user) {
+  const headers = { "Content-Type": "application/json" };
+  const key = STANDALONE ? apiKey() : "";
+  if (key) { headers["x-api-key"] = key; headers["anthropic-version"] = "2023-06-01"; headers["anthropic-dangerous-direct-browser-access"] = "true"; }
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST", headers,
+    body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, system, messages: [{ role: "user", content: user }] })
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const data = await res.json();
+  const text = (data.content || []).filter(c => c.type === "text").map(c => c.text).join("\n");
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error("no JSON in reply");
+  return JSON.parse(m[0]);
+}
+function apiFail(err) {
+  console.error(err);
+  notice(t().apiBack);
+  setMode("recall");
+}
+
+/* ---------- SENTENCE ---------- */
+async function startSentence() {
+  hideFeedback(); notice("");
+  const targets = dueTargets(2 + (Math.random() < 0.5 ? 1 : 0));
+  sent = { prompt: "", targets };
+  stage(esc(t().building), "", true);
+  showAids(false);
+  setBusy(true);
+  try {
+    const r = await claude(
+      `You are a ${LEARN()} tutor for an A1–A2 learner whose native language is ${NATIVE()}. Return ONLY JSON, no markdown, shaped exactly: {"prompt":"<one short ${NATIVE()} sentence the learner will translate into ${LEARN()}>"}. The sentence must use every target word, be 5–9 words, present tense, one clause, everyday register.${dir === "de" ? ' Use "you" (informal du) unless a formal cue fits.' : ""}`,
+      `Target words (${LEARN()} → ${NATIVE()}): ${targets.map(x => `${tgtText(x)} → ${dir === "de" ? x.en : fullDeText(x)}`).join("; ")}. The learner also knows these core words and may need them: ${CORE_TEXT}. Build the prompt.`
+    );
+    if (!r || typeof r.prompt !== "string") throw new Error("bad prompt shape");
+    sent.prompt = r.prompt;
+    phase = "ask";
+    stage(esc(r.prompt), `${esc(t().use)} ${targets.map(x => `<span class="chip">${natHtml(x)}</span>`).join("")}`);
+    el.input.placeholder = t().typeSentence; el.input.value = ""; setBtn(t().check);
+    setBusy(false);
+    showAids(true);
+  } catch (e) { setBusy(false); apiFail(e); }
+}
+
+const GRADE_RULES = () => dir === "de"
+  ? `"wrong" = wrong article, wrong case, verb not in second position, wrong conjugation, a target word missing, or meaning off. Explanation focuses on gender, case, verb position, or conjugation.`
+  : `"wrong" = wrong or missing a/an/the, wrong word order, missing third-person -s, wrong tense or verb form, a target word missing, or meaning off. Explanation focuses on articles, word order, or verb form. Do not penalise British vs American spelling.`;
+async function gradeSentence(raw, gaveUp) {
+  const L = t();
+  if (!gaveUp && !raw.trim()) { notice(L.typeSentenceFirst); return; }
+  notice("");
+  const used = hints;
+  setBusy(true);
+  try {
+    const notes = dir === "de" ? sent.targets.map(x => GRADER_NOTES[x.de]).filter(Boolean) : [];
+    const r = await claude(
+      `You grade a ${LEARN()} sentence written by an A1–A2 learner whose native language is ${NATIVE()}. Return ONLY JSON, no markdown, shaped exactly: {"verdict":"correct"|"minor"|"wrong","explanation":"<one sentence in ${NATIVE()}, max 25 words, naming the specific error>","corrected":"<the best correct ${LEARN()} sentence>"}. "correct" = fully correct (ignore missing final punctuation). "minor" = meaning clear with one small slip such as a typo, capitalization, or a small ending. ${GRADE_RULES()} If the learner gave up, verdict is "wrong" and the explanation is one line on the key grammar point of the corrected sentence. Core words the learner knows and may use freely: ${CORE_TEXT}.${notes.length ? "\nSpecial checks for this sentence:\n- " + notes.join("\n- ") : ""}`,
+      `${NATIVE()} prompt: ${sent.prompt}\nTarget words: ${sent.targets.map(x => `${tgtText(x)} (${dir === "de" ? x.en : fullDeText(x)})`).join("; ")}\nLearner wrote: ${gaveUp ? "(gave up — no answer)" : raw}`
+    );
+    let v = gaveUp ? "bad" : r.verdict === "correct" ? "ok" : r.verdict === "minor" ? "minor" : "bad";
+    if (v === "ok" && used) v = "hinted";
+    say(v === "ok" ? "right" : v === "hinted" ? "hinted" : v === "minor" ? "minor" : gaveUp ? "idk" : "wrong");
+    sent.targets.forEach(x => mark(x, v));
+    save();
+    setBusy(false);
+    showAids(false);
+    showFeedback(`
+      <span class="verdict ${v}">${v === "ok" ? L.correct : v === "hinted" ? L.correctHint(1) : v === "minor" ? L.minor : gaveUp ? L.didntKnow : L.wrong}</span>
+      <div class="answer" style="font-size:20px">${esc(r.corrected || "")}</div>
+      <div class="reason">${esc(r.explanation || "")}</div>
+      ${gaveUp ? "" : `<div class="reason" style="color:var(--muted)">${esc(L.youWrote)} ${esc(raw)}</div>`}
+      <div class="next">${v === "ok" ? L.targetsUp : v === "bad" ? L.targetsReset : L.targetsSame} ${v === "ok" ? esc(L.autoNext) : esc(L.enterForNext)}</div>
+      ${v === "ok" ? `<div class="auto"><i></i></div>` : ""}`);
+    if (v === "ok") scheduleAuto();
+  } catch (e) {
+    console.error(e); setBusy(false);
+    el.input.value = raw;
+    notice(L.gradeFail);
+  }
+}
+
+/* ---------- ADD ---------- */
+function addTabs() {
+  const L = t();
+  return `<span class="tab" role="button" aria-pressed="${addKind === "dict"}" data-kind="dict">${esc(L.dictTab)}</span><span class="tab" role="button" aria-pressed="${addKind === "slang"}" data-kind="slang">${esc(L.slangTab)}</span>`;
+}
+function showAdd() {
+  hideFeedback(); phase = "ask"; showAids(false);
+  const L = t();
+  slangStep = 0; slangDraft = { word: "", meaning: "" };
+  if (addKind === "dict") {
+    stage(esc(L.addTitle), `${addTabs()}<br>${esc(L.addSub(bank.length))}`);
+    el.input.placeholder = L.addPh; el.input.value = ""; setBtn(L.add);
+  } else showSlangStep();
+  focus();
+}
+function showSlangStep() {
+  const L = t();
+  if (slangStep === 0) { stage(esc(L.slangWord), `${addTabs()}<br>${esc(L.slangWordSub)}`); el.input.placeholder = L.slangPh1; setBtn(L.next); }
+  else if (slangStep === 1) { stage(esc(L.slangMeaning(slangDraft.word)), addTabs()); el.input.placeholder = L.slangPh2; setBtn(L.next); }
+  else { stage(esc(L.slangNote), `<span class="chip">${esc(slangDraft.word)}</span><span class="chip">${esc(slangDraft.meaning)}</span>`); el.input.placeholder = L.slangPh3; setBtn(L.add); }
+  el.input.value = ""; phase = "ask";
+}
+function addSlang(raw) {
+  const L = t(), v = raw.trim();
+  if (slangStep === 0) { if (!v) { notice(L.typeWordFirst); return; } slangDraft.word = v; slangStep = 1; showSlangStep(); return; }
+  if (slangStep === 1) { if (!v) { notice(L.typeWordFirst); return; } slangDraft.meaning = v; slangStep = 2; showSlangStep(); return; }
+  notice("");
+  // target language holds the slang word; native holds the meaning. Article typed with a German noun becomes its gender.
+  let word = slangDraft.word, gender = null;
+  if (dir === "de") { const m = word.match(/^(der|die|das)\s+(.+)$/i); if (m) { gender = m[1].toLowerCase(); word = m[2]; } }
+  const entry = dir === "de" ? w(word, slangDraft.meaning, gender, null, "slang", "", "") : w(slangDraft.meaning, word, null, null, "slang", "", "");
+  entry.source = "self"; entry.note = v;
+  const bare = x => norm(dir === "de" ? x.de : x.en);
+  const dup = bank.find(x => isSlang(x) && bare(x) === bare(entry));
+  if (dup) {
+    showFeedback(`<span class="verdict minor">${esc(L.slangDup)}</span><div class="answer">${tgtHtml(dup)}${sayBtn(dup)}</div><div class="reason">${natHtml(dup)}</div><div class="next">${esc(L.enterAnother)}</div>`);
+    return;
+  }
+  bank.push(entry); save(); say("added"); renderScope();
+  showFeedback(`<span class="verdict ok">${esc(L.slangSaved)}</span><div class="answer">${tgtHtml(entry)}${sayBtn(entry)}</div><div class="reason">${natHtml(entry)}</div>${v ? `<div class="example">${esc(v)}</div>` : ""}<div class="next">${esc(L.nowWords(bank.length))} ${esc(L.enterAnother)}</div>`);
+}
+
+async function addWord(raw) {
+  const L = t();
+  if (!raw.trim()) { notice(L.typeWordFirst); return; }
+  notice("");
+  setBusy(true);
+  stage(esc(L.looking), "", true);
+  try {
+    const r = await claude(
+      `Return ONLY JSON, no markdown, for one German–English vocabulary entry aimed at an A1–A2 learner, shaped exactly: {"de":"<German word without article; verbs in infinitive>","en":"<short English meaning; verbs as 'to …'>","gender":"der"|"die"|"das"|null,"plural":"<German plural without article, or null if not a noun or no common plural>","theme":"greetings"|"directions"|"daily"|"opinions"|"time"|"other","example":"<one short A1 German sentence using the word>","exampleEn":"<the same sentence in natural English>"}. The input may be English or German; if English, choose the most common everyday German equivalent.`,
+      raw
+    );
+    if (!r || !r.de || !r.en) throw new Error("bad entry shape");
+    stage(esc(L.addTitle), `${addTabs()}<br>${esc(L.addSub(bank.length))}`);
+    const entry = w(r.de, r.en, ["der","die","das"].includes(r.gender) ? r.gender : null, r.plural || null, r.theme || "other", r.example || "", r.exampleEn || "");
+    entry.source = "self";
+    const dup = bank.find(x => keyOf(x) === keyOf(entry));
+    setBusy(false);
+    if (dup) {
+      showFeedback(`<span class="verdict minor">${esc(L.already)}</span><div class="answer">${tgtHtml(dup)}</div><div class="reason">${natHtml(dup)}, ${esc(L.level(dup.srs.level))}</div><div class="next">${esc(L.enterAnother)}</div>`);
+    } else {
+      bank.push(entry); await save(); say("added");
+      const plural = entry.gender && entry.plural ? `<small>${L.pl} ${esc(entry.plural)}</small>` : "";
+      const ex = exampleOf(entry);
+      showFeedback(`<span class="verdict ok">${esc(L.added)}</span><div class="answer">${tgtHtml(entry)}${dir === "de" ? plural : ""}</div><div class="reason">${natHtml(entry)} (${esc(L.themes[entry.theme] || entry.theme)})</div>${ex ? `<div class="example">${esc(ex)}</div>` : ""}<div class="next">${esc(L.nowWords(bank.length))} ${esc(L.enterAnother)}</div>`);
+    }
+  } catch (e) {
+    console.error(e); setBusy(false);
+    showAdd(); el.input.value = raw;
+    notice(L.lookupFail);
+  }
+}
+
+/* ---------- HELP ---------- */
+const HELP = {
+  en: [
+    { t:"Start here", p:[
+      `<h3>One box, one button</h3><p><b>Hin &amp; Her</b> — back and forth. Read the prompt at the top, type your answer, press <kbd>Check</kbd> or Enter. The correction appears right below — nothing to tap open. <kbd>Next</kbd> or Enter moves on.</p><p>Leaving the box empty and pressing Enter counts as <kbd>I don't know</kbd>.</p>`,
+      `<h3>The bottom bar</h3><p><b>Recall</b> — see a word, type its translation.</p><p><b>Sentence</b> — translate a short sentence, graded by Frau Shego.</p><p><b>Add word</b> — grow your own bank.</p><p><b>EN→DE</b> — flips who's learning what. See <i>Direction &amp; key</i>.</p>`,
+      `<h3>The strip at the top</h3><p><b>4/20</b> — where you are in this session.</p><p><b>streak</b> — correct answers in a row. <b>best</b> — your record.</p><p><b>Words</b> — your whole bank: the five you miss most, then everything, with filters by theme, due, missed, and app words vs the ones you added.</p>`,
+    ]},
+    { t:"Recall", p:[
+      `<h3>English in, German out</h3><p>Nouns must include the article. The article is what you're learning, so without it the answer is wrong.</p><div class="ex"><div>Prompt: <b>dog</b></div><div class="ok">✓ der Hund</div><div class="no">✗ Hund — no article</div><div class="no">✗ die Hund — wrong article</div></div>`,
+      `<h3>Typing on a phone</h3><p><b>ss</b> for ß and <b>ae / oe / ue</b> for umlauts are accepted. Capitals and punctuation don't matter.</p><div class="ex"><div class="ok">✓ die strasse</div><div class="ok">✓ wie gehts</div><div class="ok">✓ Guten morgen</div></div>`,
+      `<h3>What you get back</h3><p>The verdict, the full word with article and plural, the reason if you were wrong, and an example sentence. Read the example — it shows the word doing its job.</p>`,
+    ]},
+    { t:"Sentence", p:[
+      `<h3>How it works</h3><p>Frau Shego picks 2–3 words that are due and builds a short English sentence around them. You write it in German. The words to use are shown as chips.</p><p>Needs internet.</p>`,
+      `<h3>Three verdicts</h3><p><b>Correct</b> — all target words level up.</p><p><b>Minor error</b> — one small slip (typo, capital, ending). Levels stay put.</p><p><b>Wrong</b> — article, case, verb position, conjugation, or a missing word. Targets drop to level 0.</p><p>The explanation names the exact error, not just "wrong".</p>`,
+      `<h3>Example</h3><div class="ex"><div>Prompt: <b>I need the key today.</b></div><div class="ok">✓ Ich brauche heute den Schlüssel.</div><div class="no">✗ Ich brauche heute der Schlüssel.</div><div>→ <i>brauchen</i> takes the accusative: der becomes den.</div></div>`,
+      `<h3>Core words</h3><p>ich, du, er, sie, wir, sein, haben, machen, können, möchten, nicht, kein, und, aber, wo, wann, was, wie, warum — always available, never tested. They're the glue.</p>`,
+    ]},
+    { t:"Add word", p:[
+      `<h3>Slang</h3><p>The second tab under Add word. Nothing is looked up — you log what you actually heard: the word as you'd spell it, what it means, and where you heard it (optional).</p><div class="ex"><div>Digga → <b>mate, bro</b></div><div><i>from Lena, only with friends</i></div></div><p>Every slang card has a <b>🔊 Say it</b> button — your phone's own German voice reads it, offline. Only slang gets this; dictionary words you already hear in Duolingo.</p><p>Slang lives in its own rotation: flip the <b>Words / Slang</b> switch at the top of Recall to drill only your slang. It never shows up in Sentence mode.</p>`,
+      `<h3>Grow the bank</h3><p>Type a word or short phrase in English or German. Frau Shego fills in the article, plural, theme and an example sentence in both languages, then adds it.</p><div class="ex"><div>neighbour → <b>der Nachbar</b>, pl. Nachbarn</div><div>straight ahead → <b>geradeaus</b></div></div><p>Duplicates are caught. New words start at level 0 and appear in your next session.</p>`,
+    ]},
+    { t:"Hints", p:[
+      `<h3>Hint in Recall</h3><p>One letter per press, up to half the word. The article is never revealed — that part is on you.</p><div class="ex"><div>Prompt: <b>key</b></div><div>S _ _ _ _ _ _ _ _</div><div>S c h _ _ _ _ _ _</div><div>Schl _ _ _ _ _ (no more hints)</div></div>`,
+      `<h3>Hint in Sentence</h3><p>Frau Shego points at the rule, never at the word: "the verb goes second", "accusative after kaufen". Two per sentence; the second one is drier.</p>`,
+      `<h3>What hints cost</h3><p>Correct after a hint: the word <b>keeps</b> its level. No level-up, no miss, streak untouched.</p><p><b>I don't know</b>: counts as a miss. Level 0, streak reset, correction shown.</p><p>So a hint is cheaper than a guess.</p>`,
+    ]},
+    { t:"Levels", p:[
+      `<h3>How words move</h3><p>Every word has a level from 0 to 5. Correct → up one. Wrong → back to 0.</p><p>Higher level means a longer wait before it comes back:</p><div class="ex"><div>0 → now &nbsp; 1 → 1 day &nbsp; 2 → 3 days</div><div>3 → 1 week &nbsp; 4 → 2 weeks &nbsp; 5 → 1 month</div></div>`,
+      `<h3>Sessions</h3><p>A session is 20 words: everything that's due first, lowest level first, then the soonest-due words to fill up. Words you just got wrong come straight back.</p><p><b>Words</b> shows the five you miss most at the top, sorted by misses, then by level.</p><h3>Backup</h3><p>At the bottom of Words: <b>Export</b> saves a small file with everything — both directions, levels, slang, streak (not the key). <b>Import</b> merges a backup back in; nothing is ever deleted, and whichever side was practised more recently wins. Do it once a month, or before changing phones.</p>`,
+      `<h3>Streak</h3><p>Correct answers in a row, carried across sessions. A hint doesn't break it; a miss does. <b>best</b> is your longest ever.</p>`,
+    ]},
+    { t:"Frau Shego", p:[
+      `<h3>Your teacher</h3><p>She speaks the language you're learning; the small line is yours. Read her lines — <i>Richtig. Genau. Schon wieder?</i> — that's real classroom German you pick up for free.</p>`,
+      `<h3>Her moods</h3><p>Pleased when you're right. Unimpressed when you ask for a hint. Resigned when you give up. Dry, not cruel — her job is a raised eyebrow, not a lecture.</p>`,
+    ]},
+    { t:"Direction & key", p:[
+      `<h3>Two directions</h3><p><b>EN→DE</b> — you know English, you're learning German.</p><p><b>DE→EN</b> — the reverse. The whole app switches to German and Frau Shego speaks English.</p><p>Progress is stored separately for each direction, so two people can share one phone.</p>`,
+      `<h3>Online and offline</h3><p><b>Recall</b> works offline, no key needed.</p><p><b>Sentence</b>, <b>Add word</b> and teacher hints call the API: they need internet.</p><p>Outside the Claude app, tap <b>Key</b> and paste an API key. It's stored only in this browser and never leaves your device except to talk to the API.</p>`,
+    ]},
+  ],
+  de: [
+    { t:"Los geht's", p:[
+      `<h3>Ein Feld, ein Knopf</h3><p><b>Hin &amp; Her</b> — hin und her. Lies die Aufgabe oben, tippe deine Antwort, drücke <kbd>Prüfen</kbd> oder Enter. Die Korrektur erscheint sofort darunter — nichts muss aufgeklappt werden. <kbd>Weiter</kbd> oder Enter geht zum nächsten.</p><p>Leeres Feld plus Enter zählt als <kbd>Weiß ich nicht</kbd>.</p>`,
+      `<h3>Die Leiste unten</h3><p><b>Abfrage</b> — ein Wort sehen, die Übersetzung tippen.</p><p><b>Satz</b> — einen kurzen Satz übersetzen, bewertet von Frau Shego.</p><p><b>Wort +</b> — eigene Wörter hinzufügen.</p><p><b>DE→EN</b> — dreht die Richtung um. Siehe <i>Richtung &amp; Key</i>.</p>`,
+      `<h3>Die Leiste oben</h3><p><b>4/20</b> — wo du in dieser Runde bist.</p><p><b>Serie</b> — richtige Antworten in Folge. <b>Rekord</b> — dein Bestwert.</p><p><b>Wörter</b> — deine ganze Sammlung: die fünf häufigsten Fehler, dann alles, mit Filtern nach Thema, fällig, Fehler und App-Wörter vs. selbst hinzugefügte.</p>`,
+    ]},
+    { t:"Abfrage", p:[
+      `<h3>Deutsch rein, Englisch raus</h3><p>Du siehst das deutsche Wort mit Artikel und tippst das englische Wort.</p><div class="ex"><div>Aufgabe: <b>der Hund</b></div><div class="ok">✓ dog</div><div>Aufgabe: <b>kaufen</b></div><div class="ok">✓ to buy &nbsp; ✓ buy</div></div>`,
+      `<h3>Tippen am Handy</h3><p>Groß-/Kleinschreibung und Satzzeichen sind egal. Bei mehreren Bedeutungen reicht eine.</p><div class="ex"><div class="ok">✓ Good morning</div><div class="ok">✓ good morning</div><div>Aufgabe: <b>Bitte</b> → ✓ please &nbsp; ✓ you're welcome</div></div>`,
+      `<h3>Was zurückkommt</h3><p>Das Urteil, das englische Wort, der Grund bei Fehlern und ein englischer Beispielsatz. Lies das Beispiel — dort siehst du das Wort in Aktion.</p>`,
+    ]},
+    { t:"Satz", p:[
+      `<h3>So funktioniert es</h3><p>Frau Shego nimmt 2–3 fällige Wörter und baut daraus einen kurzen deutschen Satz. Du schreibst ihn auf Englisch. Die zu benutzenden Wörter stehen als Chips darunter.</p><p>Braucht Internet.</p>`,
+      `<h3>Drei Urteile</h3><p><b>Richtig</b> — alle Zielwörter eine Stufe höher.</p><p><b>Kleiner Fehler</b> — ein kleiner Patzer (Tippfehler, Groß-/Kleinschreibung, Endung). Stufen bleiben.</p><p><b>Falsch</b> — a/an/the, Wortstellung, drittes -s, Zeitform oder ein fehlendes Wort. Zielwörter zurück auf Stufe 0.</p><p>Die Erklärung nennt den genauen Fehler.</p>`,
+      `<h3>Beispiel</h3><div class="ex"><div>Aufgabe: <b>Ich brauche heute den Schlüssel.</b></div><div class="ok">✓ I need the key today.</div><div class="no">✗ I need today the key.</div><div>→ Im Englischen steht die Zeitangabe am Ende: Subjekt – Verb – Objekt – Zeit.</div></div>`,
+      `<h3>Grundwörter</h3><p>I, you, he, she, we, to be, to have, to do, can, would like, not, no, and, but, where, when, what, how, why — immer verfügbar, nie abgefragt. Das ist der Kitt.</p>`,
+    ]},
+    { t:"Wort +", p:[
+      `<h3>Slang</h3><p>Der zweite Reiter unter „Wort +“. Nichts wird nachgeschlagen — du trägst ein, was du wirklich gehört hast: das Wort so, wie man es schreibt, die Bedeutung und wo du es gehört hast (optional).</p><div class="ex"><div>mate → <b>Kumpel, Alter</b></div><div><i>von Tom, nur locker</i></div></div><p>Jede Slang-Karte hat einen <b>🔊 Anhören</b>-Knopf — die englische Stimme deines Handys liest es vor, auch offline. Nur Slang bekommt das.</p><p>Slang hat seine eigene Runde: oben in der Abfrage auf <b>Wörter / Slang</b> umschalten, dann kommt nur dein Slang dran. Im Satz-Modus taucht er nie auf.</p>`,
+      `<h3>Eigene Wörter</h3><p>Tippe ein Wort oder einen kurzen Ausdruck auf Deutsch oder Englisch. Frau Shego ergänzt Artikel, Plural, Thema und je einen Beispielsatz in beiden Sprachen und speichert es.</p><div class="ex"><div>Nachbar → <b>neighbour</b></div><div>geradeaus → <b>straight ahead</b></div></div><p>Doppelte werden erkannt. Neue Wörter starten auf Stufe 0 und kommen in der nächsten Runde dran.</p>`,
+    ]},
+    { t:"Tipps", p:[
+      `<h3>Tipp in der Abfrage</h3><p>Pro Klick ein Buchstabe, höchstens die halbe Wortlänge.</p><div class="ex"><div>Aufgabe: <b>der Schlüssel</b></div><div>k _ _</div><div>ke _ (keine Tipps mehr)</div></div>`,
+      `<h3>Tipp im Satz-Modus</h3><p>Frau Shego zeigt auf die Regel, nie auf das Wort: „the verb comes after the subject", „you need an article here". Zwei pro Satz, der zweite trockener.</p>`,
+      `<h3>Was Tipps kosten</h3><p>Richtig nach einem Tipp: das Wort <b>behält</b> seine Stufe. Keine Stufe höher, kein Fehler, Serie bleibt.</p><p><b>Weiß ich nicht</b>: zählt als Fehler. Stufe 0, Serie weg, Korrektur wird gezeigt.</p><p>Ein Tipp ist also billiger als Raten.</p>`,
+    ]},
+    { t:"Stufen", p:[
+      `<h3>Wie Wörter wandern</h3><p>Jedes Wort hat eine Stufe von 0 bis 5. Richtig → eine höher. Falsch → zurück auf 0.</p><p>Höhere Stufe heißt längere Pause, bis es wiederkommt:</p><div class="ex"><div>0 → sofort &nbsp; 1 → 1 Tag &nbsp; 2 → 3 Tage</div><div>3 → 1 Woche &nbsp; 4 → 2 Wochen &nbsp; 5 → 1 Monat</div></div>`,
+      `<h3>Runden</h3><p>Eine Runde hat 20 Wörter: zuerst alles Fällige, niedrigste Stufe zuerst, dann die bald fälligen zum Auffüllen. Was du gerade falsch hattest, kommt direkt wieder.</p><p><b>Wörter</b> zeigt oben die fünf häufigsten Fehler, sortiert nach Fehlern, dann nach Stufe.</p><h3>Sicherung</h3><p>Unten in „Wörter": <b>Sichern</b> speichert eine kleine Datei mit allem — beide Richtungen, Stufen, Slang, Serie (nicht der Key). <b>Wiederherstellen</b> spielt eine Sicherung zurück; nichts wird gelöscht, und der zuletzt geübte Stand gewinnt. Einmal im Monat oder vor einem Handywechsel.</p>`,
+      `<h3>Serie</h3><p>Richtige Antworten in Folge, über Runden hinweg. Ein Tipp unterbricht sie nicht, ein Fehler schon. <b>Rekord</b> ist deine längste Serie.</p>`,
+    ]},
+    { t:"Frau Shego", p:[
+      `<h3>Deine Lehrerin</h3><p>Sie spricht die Sprache, die du lernst; die kleine Zeile ist deine. Lies ihre Sätze — <i>Right. Exactly. Again?</i> — echtes Klassenzimmer-Englisch, gratis dazu.</p>`,
+      `<h3>Ihre Laune</h3><p>Zufrieden, wenn du richtig liegst. Unbeeindruckt, wenn du einen Tipp willst. Resigniert, wenn du aufgibst. Trocken, nicht gemein — eine hochgezogene Augenbraue, keine Predigt.</p>`,
+    ]},
+    { t:"Richtung & Key", p:[
+      `<h3>Zwei Richtungen</h3><p><b>DE→EN</b> — du kannst Deutsch und lernst Englisch.</p><p><b>EN→DE</b> — umgekehrt. Die App wechselt auf Englisch und Frau Shego spricht Deutsch.</p><p>Der Fortschritt wird pro Richtung getrennt gespeichert — zwei Leute können sich ein Handy teilen.</p>`,
+      `<h3>Online und offline</h3><p><b>Abfrage</b> funktioniert offline, ohne Key.</p><p><b>Satz</b>, <b>Wort +</b> und die Tipps von Frau Shego sprechen mit der API: sie brauchen Internet.</p><p>Außerhalb der Claude-App: auf <b>Key</b> tippen und einen API-Key einfügen. Er bleibt nur in diesem Browser und verlässt dein Gerät nur für die API.</p>`,
+    ]},
+  ],
+};
+let helpTopic = 0, helpPage = 0;
+const helpEl = { box: $("help"), nav: $("helpNav"), page: $("helpPage"), dots: $("hDots"), prev: $("hPrev"), next: $("hNext"), close: $("helpClose"), title: $("helpTitle"), btn: $("helpBtn") };
+function helpData() { return HELP[dir === "de" ? "en" : "de"]; }
+function renderHelp() {
+  const topics = helpData(), topic = topics[helpTopic], n = topic.p.length;
+  helpEl.title.textContent = dir === "de" ? "Hin & Her — Help" : "Hin & Her — Hilfe";
+  helpEl.nav.innerHTML = topics.map((x, i) => `<button type="button" data-i="${i}" aria-current="${i === helpTopic}">${esc(x.t)}</button>`).join("");
+  helpEl.page.innerHTML = topic.p[helpPage];
+  helpEl.page.scrollTop = 0;
+  helpEl.dots.innerHTML = topic.p.map((_, i) => `<i class="${i === helpPage ? "on" : ""}"></i>`).join("");
+  helpEl.prev.disabled = helpPage === 0;
+  helpEl.next.disabled = helpPage >= n - 1;
+}
+function openHelp() { helpTopic = 0; helpPage = 0; renderHelp(); helpEl.box.hidden = false; helpEl.close.focus(); }
+function closeHelp() { helpEl.box.hidden = true; focus(); }
+helpEl.btn.addEventListener("click", openHelp);
+helpEl.close.addEventListener("click", closeHelp);
+helpEl.box.addEventListener("click", e => { if (e.target === helpEl.box) closeHelp(); });
+helpEl.nav.addEventListener("click", e => { const b = e.target.closest("button[data-i]"); if (!b) return; helpTopic = +b.dataset.i; helpPage = 0; renderHelp(); });
+helpEl.prev.addEventListener("click", () => { if (helpPage > 0) { helpPage--; renderHelp(); } });
+helpEl.next.addEventListener("click", () => { if (helpPage < helpData()[helpTopic].p.length - 1) { helpPage++; renderHelp(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !bankEl.box.hidden) { closeBank(); return; }
+  if (helpEl.box.hidden) return;
+  if (e.key === "Escape") closeHelp();
+  else if (e.key === "ArrowRight") helpEl.next.click();
+  else if (e.key === "ArrowLeft") helpEl.prev.click();
+});
+
+/* ---------- MODE + INPUT + DIRECTION ---------- */
+function setMode(m) {
+  mode = m; hideFeedback(); showAids(false);
+  document.querySelectorAll("nav.modes button[data-mode]").forEach(b => b.setAttribute("aria-current", b.dataset.mode === m ? "true" : "false"));
+  renderScope();
+  if (m === "recall") { document.body.classList.remove("busy"); if (!session.length || idx >= session.length) buildSession(); showRecall(); }
+  else if (m === "sentence") startSentence();
+  else showAdd();
+}
+
+async function switchDirection() {
+  if (busy) return;
+  dir = dir === "de" ? "en" : "de";
+  scope = "words"; addKind = "dict";
+  await sset(DIR_KEY, dir);
+  await loadBank();
+  notice("");
+  renderChrome();
+  buildSession();
+  setMode("recall");
+  say("hello");
+}
+
+function onEnter() {
+  const raw = el.input.value;
+  if (phase === "feedback") { advance(); return; }
+  if (phase === "done") { buildSession(); showRecall(); return; }
+  if (mode === "recall") gradeRecall(raw);
+  else if (mode === "sentence") gradeSentence(raw);
+  else if (addKind === "slang") addSlang(raw);
+  else addWord(raw);
+}
+
+document.addEventListener("pointerdown", () => { wasTyping = document.activeElement === el.input; }, true);
+document.addEventListener("keydown", e => { if (e.key === "Enter") wasTyping = document.activeElement === el.input; }, true);
+el.form.addEventListener("submit", e => { e.preventDefault(); if (!busy) onEnter(); });
+el.input.addEventListener("input", () => {
+  if (autoTimer && phase === "feedback" && el.input.value) { const keep = el.input.value; advance(); el.input.value = keep; }
+});
+el.keyBtn.addEventListener("click", setApiKey);
+el.dirBtn.addEventListener("click", switchDirection);
+document.querySelectorAll("nav.modes button[data-mode]").forEach(b => b.addEventListener("click", () => { if (!busy) setMode(b.dataset.mode); }));
+el.sub.addEventListener("click", e => {
+  const tab = e.target.closest(".tab[data-kind]"); if (!tab || busy || mode !== "add") return;
+  addKind = tab.dataset.kind; showAdd();
+});
+el.scope.addEventListener("click", e => {
+  const b = e.target.closest("button[data-scope]"); if (!b || busy || b.dataset.scope === scope) return;
+  scope = b.dataset.scope; buildSession(); showRecall();
+});
+el.hintBtn.addEventListener("click", giveHint);
+el.idkBtn.addEventListener("click", giveUp);
+el.bankBtn.addEventListener("click", openBank);
+
+/* ---------- OFFLINE (hosted only) ---------- */
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+
+/* ---------- START ---------- */
+(async () => {
+  await load();
+  renderChrome();
+  buildSession();
+  setMode("recall");
+  say("hello");
+})();
+</script>
+</body>
+</html>
