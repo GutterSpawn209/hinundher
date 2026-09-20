@@ -79,6 +79,15 @@
   .bank-foot span{font-size:12px;color:var(--muted);font-weight:600;margin-left:auto;text-align:right}
   .bank-list .empty{padding:24px 0;color:var(--muted);font-size:15px;text-align:center}
 
+  .keybox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+  .keybox[hidden]{display:none}
+  .keybox label{font-size:13px;font-weight:800;color:var(--muted)}
+  .keybox input{font:inherit;font-size:16px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);outline:none;font-family:ui-monospace,Menlo,monospace}
+  .keybox input:focus{border-color:var(--ink)}
+  .keyrow{display:flex;gap:8px}
+  .keyrow button{font:inherit;font-size:14px;font-weight:800;padding:8px 14px;border:0;border-radius:999px;background:var(--ink);color:#fff;cursor:pointer}
+  .keyrow button.ghost{background:var(--panel);color:var(--ink);border:1.5px solid var(--line)}
+  .keyrow button.danger{color:var(--bad);margin-left:auto}
   .scope{display:flex;gap:6px;margin-bottom:-6px}
   .scope[hidden]{display:none}
   .scope button,#sub .tab{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
@@ -199,6 +208,12 @@
     <button id="bankBtn">Words</button>
   </header>
 
+  <form id="keyBox" class="keybox" hidden autocomplete="off">
+    <label for="keyIn" id="keyLabel">API key</label>
+    <input id="keyIn" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-…">
+    <div class="keyrow"><button type="submit" id="keySave">Save</button><button type="button" id="keyCancel" class="ghost">Cancel</button><button type="button" id="keyRemove" class="ghost danger">Remove</button></div>
+  </form>
+
   <div id="scope" class="scope" hidden>
     <button type="button" data-scope="words" aria-pressed="true">Words</button>
     <button type="button" data-scope="slang" aria-pressed="false">Slang</button>
@@ -315,7 +330,7 @@
 
 <script>
 /* ---------- DATA SPINE ---------- */
-const w = (de,en,gender,plural,theme,example,exampleEn,alt) => ({de,en,gender,plural,theme,example,exampleEn,alt:alt||[],source:"app",srs:{level:0,lastSeen:null,misses:0}});
+const w = (de,en,gender,plural,theme,example,exampleEn,alt) => ({de,en,gender,plural,theme,example,exampleEn,alt:alt||[],altEn:[],source:"app",srs:{level:0,lastSeen:null,misses:0}});
 const SEED = [
   // greetings / small talk
   w("Hallo","hello",null,null,"greetings","Hallo, wie geht's?","Hello, how are you?"),
@@ -405,6 +420,10 @@ const SEED = [
   w("früh","early",null,null,"time","Ich stehe früh auf.","I get up early."),
 ];
 
+/* Extra accepted English answers, keyed by the German word. The displayed gloss stays short; these are just accepted. */
+const ALT_EN = {"Hallo": ["hi", "hey"], "Guten Morgen": ["morning"], "Tschüss": ["goodbye", "see you", "cheers"], "Wie geht's?": ["how's it going", "how are you doing", "how is it going"], "Danke": ["thanks", "thank you very much"], "Bitte": ["welcome"], "Entschuldigung": ["pardon", "excuse me please", "sorry"], "Frau": ["mrs", "ms", "wife", "woman"], "Mann": ["husband", "man"], "Freund": ["friend", "boyfriend"], "Freundin": ["friend", "girlfriend"], "heißen": ["to be named", "be named", "my name is", "be called"], "kommen": ["come from"], "wohnen": ["to live", "live", "to reside", "reside", "to stay"], "sprechen": ["to talk", "talk"], "geradeaus": ["straight on", "straight"], "Straße": ["road"], "Bahnhof": ["station", "railway station", "train station"], "Haltestelle": ["bus stop", "tram stop", "stop"], "Auto": ["automobile"], "Stadt": ["town"], "nah": ["close", "nearby", "close by"], "weit": ["far away", "distant"], "fahren": ["to ride", "ride", "to go by car", "go by car", "to travel", "travel"], "gehen": ["to walk", "walk"], "suchen": ["to search", "search", "to seek", "seek", "to search for", "search for", "look for"], "Wohnung": ["flat"], "Arbeit": ["job"], "Handy": ["cell phone", "cellphone", "phone", "mobile", "cell", "mobile phone"], "Kind": ["kid"], "Katze": ["kitty"], "kaufen": ["to purchase", "purchase"], "müde": ["sleepy", "exhausted"], "schön": ["pretty", "lovely", "beautiful", "nice", "good looking"], "schlecht": ["poor"], "wichtig": ["significant"], "langweilig": ["dull"], "Meinung": ["view", "opinion"], "Problem": ["issue", "trouble"], "Idee": ["idea"], "glauben": ["to think", "think", "believe"], "finden": ["think", "find"], "mögen": ["like"], "vielleicht": ["perhaps", "possibly"], "natürlich": ["naturally", "sure", "certainly"], "Uhr": ["watch", "clock", "o clock", "oclock"], "Wochenende": ["the weekend"], "Morgen": ["the morning"], "Abend": ["the evening"], "Nacht": ["the night"], "heute": ["tonight"], "spät": ["late"], "früh": ["early"], "gestern": ["yesterday"], "morgen": ["tomorrow"]};
+for (const x of SEED) if (ALT_EN[x.de]) x.altEn = ALT_EN[x.de];
+
 /* Core glue words — never in SRS rotation, always available to the sentence grader. */
 const CORE = [
   ["ich","I"],["du","you (informal)"],["er","he"],["sie","she / they"],["wir","we"],
@@ -443,7 +462,7 @@ const T = {
     lookupFail:"Couldn't look that up — press Enter to retry, or switch to Recall.", hintFail:"Hint failed — check your connection and try again.",
     typeSentenceFirst:"Type a sentence, or tap I don't know.", typeWordFirst:"Type a word first.",
     misses:n=>`${n} miss${n===1?"":"es"}`, nothingYet:"Nothing yet — answer a few words first.", saveFail:"Save failed — progress may not persist.", standalone:"Standalone: set an API key for Sentence and Add modes. Recall works without one.",
-    keyPrompt:"Anthropic API key (stored only in this browser):", keyRemoved:"API key removed.", keyTesting:"Testing the key…", keyOk:"Key works. Sentence and Add modes are live.", keyBad:d=>`Key rejected: ${d}`, keyNet:"Couldn't reach the API — check your connection.",
+    keyPrompt:"API key — stored only on this device", keySave:"Save", keyCancel:"Cancel", keyRemoveBtn:"Remove", keyRemoved:"API key removed.", keyTesting:"Testing the key…", keyOk:"Key works. Sentence and Add modes are live.", keyBad:d=>`Key rejected: ${d}`, keyNet:"Couldn't reach the API — check your connection.",
     themes:{greetings:"greetings", directions:"directions", daily:"daily life", opinions:"opinions", time:"time", other:"other", slang:"slang"},
   },
   de: {
@@ -466,7 +485,7 @@ const T = {
     lookupFail:"Konnte nicht nachschlagen — Enter zum Wiederholen, oder zur Abfrage wechseln.", hintFail:"Tipp fehlgeschlagen — Verbindung prüfen und noch einmal versuchen.",
     typeSentenceFirst:"Schreib einen Satz oder tippe auf „Weiß ich nicht“.", typeWordFirst:"Zuerst ein Wort eingeben.",
     misses:n=>`${n} Fehler`, nothingYet:"Noch nichts — beantworte erst ein paar Wörter.", saveFail:"Speichern fehlgeschlagen — Fortschritt geht eventuell verloren.", standalone:"Standalone: für Satz- und Wort-Modus einen API-Key setzen. Die Abfrage funktioniert ohne.",
-    keyPrompt:"Anthropic API-Key (wird nur in diesem Browser gespeichert):", keyRemoved:"API-Key entfernt.", keyTesting:"Key wird geprüft…", keyOk:"Key funktioniert. Satz- und Wort-Modus sind bereit.", keyBad:d=>`Key abgelehnt: ${d}`, keyNet:"API nicht erreichbar — Verbindung prüfen.",
+    keyPrompt:"API-Key — bleibt nur auf diesem Gerät", keySave:"Speichern", keyCancel:"Abbrechen", keyRemoveBtn:"Entfernen", keyRemoved:"API-Key entfernt.", keyTesting:"Key wird geprüft…", keyOk:"Key funktioniert. Satz- und Wort-Modus sind bereit.", keyBad:d=>`Key abgelehnt: ${d}`, keyNet:"API nicht erreichbar — Verbindung prüfen.",
     themes:{greetings:"Begrüßung", directions:"Wegbeschreibung", daily:"Alltag", opinions:"Meinungen", time:"Zeit", other:"Sonstiges", slang:"Slang"},
   },
 };
@@ -565,11 +584,12 @@ const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.r
 const fullDe = x => x.gender ? `<span class="g ${x.gender}">${x.gender}</span> ${esc(x.de)}` : esc(x.de);
 const fullDeText = x => x.gender ? `${x.gender} ${x.de}` : x.de;
 /* English forms: "friend (male)" → friend; "please / you're welcome" → both; "to buy" → also "buy" */
+const normEn = v => norm(v).replace(/[\s-]/g, "").replace(/'/g, "");
 const enForms = x => {
-  const base = x.en.replace(/\(.*?\)/g, "").split("/").map(v => v.trim()).filter(Boolean);
+  const base = x.en.replace(/\(.*?\)/g, "").split("/").map(v => v.trim()).filter(Boolean).concat(x.altEn || []);
   const out = [];
-  for (const b of base) { out.push(b); if (/^to /.test(b)) out.push(b.slice(3)); out.push(b.replace(/'/g, "")); }
-  return out.map(norm);
+  for (const b of base) { out.push(b); if (/^to /.test(b)) out.push(b.slice(3)); }
+  return out.map(normEn);
 };
 const enPrimary = x => x.en.replace(/\(.*?\)/g, "").split("/")[0].trim().replace(/^to /, "");
 /* target = what the learner types; native = what they're shown */
@@ -603,7 +623,10 @@ async function loadBank() {
     for (const sd of SEED) {
       const have = byKey.get(keyOf(sd));
       if (!have) bank.push(JSON.parse(JSON.stringify(sd)));
-      else if (!have.exampleEn && sd.exampleEn) have.exampleEn = sd.exampleEn; // backfill new field, keep progress
+      else {
+        if (!have.exampleEn && sd.exampleEn) have.exampleEn = sd.exampleEn; // backfill new fields, keep progress
+        if (sd.altEn && sd.altEn.length && (!have.altEn || !have.altEn.length)) have.altEn = sd.altEn;
+      }
     }
   } else {
     bank = JSON.parse(JSON.stringify(SEED));
@@ -825,12 +848,20 @@ async function exportBackup() {
     stats: { [dir]: stats, [other]: (await sget(other === "de" ? "de-stats" : "en-stats")) || { streak: 0, best: 0 } },
     direction: dir,
   };
+  const name = `hin-und-her-backup-${payload.exported.slice(0, 10)}.json`;
   const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `hin-und-her-backup-${payload.exported.slice(0, 10)}.json`;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  const file = new File([blob], name, { type: "application/json" });
+  let shared = false;
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); shared = true; } catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  if (!shared) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
   try { localStorage.setItem(BACKUP_KEY, payload.exported); } catch {}
   const n = Object.values(payload.banks).reduce((t, b) => t + b.length, 0);
   notice(t().backupSaved(n), true); renderBackupInfo();
@@ -920,7 +951,7 @@ function gradeRecall(raw) {
   let ok = false, reason = "";
   if (!inp) reason = L.skipped;
   else if (dir === "en") {
-    ok = enForms(x).includes(inp);
+    ok = enForms(x).includes(normEn(raw));
   } else {
     const targets = [norm(x.de), ...(x.alt || []).map(norm)];
     if (x.gender) {
@@ -960,13 +991,24 @@ function gradeRecall(raw) {
    and give them their own key from your console so you can revoke it on its own. */
 const EMBEDDED_KEY = "";
 function apiKey() { try { return localStorage.getItem("de-apikey") || EMBEDDED_KEY; } catch { return EMBEDDED_KEY; } }
+const keyEl = { box: $("keyBox"), input: $("keyIn"), label: $("keyLabel"), save: $("keySave"), cancel: $("keyCancel"), remove: $("keyRemove") };
 function setApiKey() {
-  const k = prompt(t().keyPrompt, apiKey());
-  if (k === null) return;
-  try { k.trim() ? localStorage.setItem("de-apikey", k.trim()) : localStorage.removeItem("de-apikey"); } catch {}
-  if (!k.trim()) { notice(t().keyRemoved); return; }
-  testKey();
+  const L = t();
+  keyEl.label.textContent = L.keyPrompt; keyEl.save.textContent = L.keySave; keyEl.cancel.textContent = L.keyCancel; keyEl.remove.textContent = L.keyRemoveBtn;
+  keyEl.input.value = apiKey();
+  keyEl.box.hidden = false; notice("");
+  setTimeout(() => keyEl.input.focus(), 0);
 }
+function closeKeyBox() { keyEl.box.hidden = true; }
+keyEl.box.addEventListener("submit", e => {
+  e.preventDefault();
+  const k = keyEl.input.value.trim();
+  if (!k) { closeKeyBox(); return; }
+  try { localStorage.setItem("de-apikey", k); } catch {}
+  closeKeyBox(); testKey();
+});
+keyEl.cancel.addEventListener("click", closeKeyBox);
+keyEl.remove.addEventListener("click", () => { try { localStorage.removeItem("de-apikey"); } catch {} closeKeyBox(); notice(t().keyRemoved); });
 async function testKey() {
   notice(t().keyTesting);
   try {
@@ -1114,13 +1156,14 @@ async function addWord(raw) {
   stage(esc(L.looking), "", true);
   try {
     const r = await claude(
-      `Return ONLY JSON, no markdown, for one German–English vocabulary entry aimed at an A1–A2 learner, shaped exactly: {"de":"<German word without article; verbs in infinitive>","en":"<short English meaning; verbs as 'to …'>","gender":"der"|"die"|"das"|null,"plural":"<German plural without article, or null if not a noun or no common plural>","theme":"greetings"|"directions"|"daily"|"opinions"|"time"|"other","example":"<one short A1 German sentence using the word>","exampleEn":"<the same sentence in natural English>"}. The input may be English or German; if English, choose the most common everyday German equivalent.`,
+      `Return ONLY JSON, no markdown, for one German–English vocabulary entry aimed at an A1–A2 learner, shaped exactly: {"de":"<German word without article; verbs in infinitive>","en":"<short English meaning; verbs as 'to …'>","altEn":["<other correct English answers a learner might type, 0–5 items>"],"gender":"der"|"die"|"das"|null,"plural":"<German plural without article, or null if not a noun or no common plural>","theme":"greetings"|"directions"|"daily"|"opinions"|"time"|"other","example":"<one short A1 German sentence using the word>","exampleEn":"<the same sentence in natural English>"}. The input may be English or German; if English, choose the most common everyday German equivalent.`,
       raw
     );
     if (!r || !r.de || !r.en) throw new Error("bad entry shape");
     stage(esc(L.addTitle), `${addTabs()}<br>${esc(L.addSub(bank.length))}`);
     const entry = w(r.de, r.en, ["der","die","das"].includes(r.gender) ? r.gender : null, r.plural || null, r.theme || "other", r.example || "", r.exampleEn || "");
     entry.source = "self";
+    entry.altEn = Array.isArray(r.altEn) ? r.altEn.filter(v => typeof v === "string").slice(0, 8) : [];
     const dup = bank.find(x => keyOf(x) === keyOf(entry));
     setBusy(false);
     if (dup) {
